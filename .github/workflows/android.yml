@@ -32,6 +32,7 @@ jobs:
       # to the platform typeface. It runs first so the assembled APK carries
       # the real brand faces whenever the runner can reach Google Fonts.
       - name: Fetch brand typefaces
+        timeout-minutes: 15
         run: ./gradlew fetchBrandFonts
 
       - name: Unit tests

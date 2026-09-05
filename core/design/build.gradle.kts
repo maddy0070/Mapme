@@ -1,3 +1,4 @@
+import java.net.HttpURLConnection
 import java.net.URL
 
 plugins {
@@ -77,8 +78,20 @@ val fetchBrandFonts by tasks.registering {
             val target = dir.resolve(fileName)
             if (target.exists() && target.length() > 0L) return@forEach
             runCatching {
-                URL(url).openStream().use { input ->
-                    target.outputStream().use { output -> input.copyTo(output) }
+                // Explicit timeouts: a typeface is a nicety, and a build must
+                // never hang waiting for one. Ten seconds to connect, thirty to
+                // transfer, then give up and use the fallback.
+                val connection = (URL(url).openConnection() as HttpURLConnection).apply {
+                    connectTimeout = 10_000
+                    readTimeout = 30_000
+                    instanceFollowRedirects = true
+                }
+                try {
+                    connection.inputStream.use { input ->
+                        target.outputStream().use { output -> input.copyTo(output) }
+                    }
+                } finally {
+                    connection.disconnect()
                 }
             }.onFailure { error ->
                 target.delete()
