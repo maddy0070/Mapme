@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MapMe's voice lives here.
+
+  Three modes, and everything MapMe ever says is one of them:
+
+    NEUTRAL      "Here's your route for today."
+    WARM         "Nice. That's your longest walk yet."
+    REASSURING   "Couldn't save that. Let's try again in a moment."
+
+  Rules:
+    - Short. If it needs a comma and a semicolon, it needs rewriting.
+    - Never blame the person. It is never "you denied permission".
+    - Never robotic. No "operation successful", no "error occurred".
+    - Never a joke every time. Personality shows up, it doesn't perform.
+    - Say what happens next, not what went wrong.
+-->
+<resources>
+    <string name="app_name">MapMe</string>
+
+    <!-- The line under the wordmark. The whole product in six words. -->
+    <string name="brand_tagline">Your life, drawn as a line.</string>
+
+    <!-- Foundation build -->
+    <string name="foundation_badge">Foundation build</string>
+    <string name="foundation_headline">Nice to meet you.</string>
+    <string name="foundation_body">This is MapMe learning how to look — the colours, the type, the glass, the way things move. The remembering starts next.</string>
+    <string name="foundation_open_kit">See what it\'s made of</string>
+
+    <!-- The design system gallery. A tool, not a screen people ship with. -->
+    <string name="kit_title">The kit</string>
+    <string name="kit_subtitle">Every piece MapMe is built from, on the device it has to look right on.</string>
+    <string name="kit_back">Back</string>
+
+    <string name="kit_section_colour">Colour</string>
+    <string name="kit_section_colour_note">Ink recedes so the journey can come forward. Four signal hues, one job each.</string>
+    <string name="kit_section_type">Type</string>
+    <string name="kit_section_type_note">Space Grotesk carries the personality. Inter carries the reading.</string>
+    <string name="kit_section_type_fallback">Brand faces aren\'t bundled in this build, so you\'re seeing the fallback. The ramp is the same.</string>
+    <string name="kit_section_trail">The trail</string>
+    <string name="kit_section_trail_note">Smoothed, gradient-timed, glowing, and drawn rather than shown.</string>
+    <string name="kit_section_glass">Glass</string>
+    <string name="kit_section_glass_note">Three densities. Below Android 12 the blur becomes frost instead of disappearing.</string>
+    <string name="kit_section_buttons">Buttons</string>
+    <string name="kit_section_buttons_note">They compress under a finger and spring back. No ripples.</string>
+    <string name="kit_section_metrics">Numbers</string>
+    <string name="kit_section_metrics_note">The most emotional thing MapMe can show you.</string>
+    <string name="kit_section_icons">Icons</string>
+    <string name="kit_section_icons_note">One handwriting: 24dp grid, 2dp stroke, round everything.</string>
+    <string name="kit_section_haptics">Haptics</string>
+    <string name="kit_section_haptics_note">Five feelings. Tap one to feel it.</string>
+
+    <string name="kit_replay_trail">Draw it again</string>
+    <string name="kit_haptic_select">Select</string>
+    <string name="kit_haptic_confirm">Confirm</string>
+    <string name="kit_haptic_tick">Tick</string>
+    <string name="kit_haptic_milestone">Milestone</string>
+    <string name="kit_haptic_warn">Gentle no</string>
+
+    <string name="kit_glass_whisper">Whisper</string>
+    <string name="kit_glass_standard">Standard</string>
+    <string name="kit_glass_dense">Dense</string>
+
+    <string name="kit_button_primary">Start my map</string>
+    <string name="kit_button_secondary">Not yet</string>
+    <string name="kit_button_ghost">Maybe later</string>
+
+    <string name="kit_metric_distance_label">Walked this month</string>
+    <string name="kit_metric_places_label">New places</string>
+    <string name="kit_metric_days_label">Days recorded</string>
+
+    <string name="kit_pill_recording">Recording</string>
+    <string name="kit_pill_today">Today</string>
+    <string name="kit_pill_record">Longest yet</string>
+</resources>

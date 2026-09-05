@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android needs a handful of MapMe colours before Compose is running: the cold
+  start window, the splash, the launcher icon. These are the only place a MapMe
+  colour is duplicated outside MapMePalette.kt — keep them in step.
+-->
+<resources>
+    <color name="mapme_canvas">#FF05080B</color>
+    <color name="mapme_ink_surface">#FF0C131A</color>
+    <color name="mapme_aurora">#FF2BF5C0</color>
+    <color name="mapme_beacon">#FF4D7CFF</color>
+    <color name="mapme_pulse">#FFFF2E93</color>
+</resources>

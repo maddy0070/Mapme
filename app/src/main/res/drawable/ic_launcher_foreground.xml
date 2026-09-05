@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Adaptive-icon foreground. The mark sits inside the 72dp safe zone of the
+  108dp canvas, so no launcher mask can clip the trail.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:pathData="M34.3,71.6 C35.7,65.9 39.3,39.3 42.6,37.4 C45.9,35.5 50.2,60.2 54.0,60.2 C57.8,60.2 62.1,35.5 65.4,37.4 C68.7,39.3 72.3,65.9 73.7,71.6"
+        android:strokeWidth="16"
+        android:strokeAlpha="0.18"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="34.3"
+                android:startY="71.6"
+                android:endX="73.7"
+                android:endY="37.4"
+                android:type="linear">
+                <item android:offset="0" android:color="@color/mapme_beacon" />
+                <item android:offset="1" android:color="@color/mapme_aurora" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <path
+        android:pathData="M34.3,71.6 C35.7,65.9 39.3,39.3 42.6,37.4 C45.9,35.5 50.2,60.2 54.0,60.2 C57.8,60.2 62.1,35.5 65.4,37.4 C68.7,39.3 72.3,65.9 73.7,71.6"
+        android:strokeWidth="6.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="34.3"
+                android:startY="71.6"
+                android:endX="73.7"
+                android:endY="37.4"
+                android:type="linear">
+                <item android:offset="0" android:color="@color/mapme_beacon" />
+                <item android:offset="1" android:color="@color/mapme_aurora" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <path
+        android:pathData="M73.7,67.1 A4.5,4.5 0 1,1 73.7,76.1 A4.5,4.5 0 1,1 73.7,67.1 Z"
+        android:fillColor="@color/mapme_pulse" />
+</vector>

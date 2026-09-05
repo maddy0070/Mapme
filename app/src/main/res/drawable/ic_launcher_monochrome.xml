@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Themed-icon variant (Android 13+). The launcher recolours this itself, so the
+  mark is drawn flat — the trail still reads as a trail even in one tone,
+  which is the test of whether the shape is any good.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108"
+    android:tint="#FFFFFFFF">
+
+    <path
+        android:pathData="M34.3,71.6 C35.7,65.9 39.3,39.3 42.6,37.4 C45.9,35.5 50.2,60.2 54.0,60.2 C57.8,60.2 62.1,35.5 65.4,37.4 C68.7,39.3 72.3,65.9 73.7,71.6"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="6.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <path
+        android:pathData="M73.7,67.1 A4.5,4.5 0 1,1 73.7,76.1 A4.5,4.5 0 1,1 73.7,67.1 Z"
+        android:fillColor="#FFFFFFFF" />
+</vector>

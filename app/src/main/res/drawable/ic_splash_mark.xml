@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The MapMe mark for the cold-start splash: the same five-point M, the same
+  spline, the same Beacon-to-Aurora sweep as TrailLine draws in the app. The
+  first frame of MapMe and every frame after it are the same object.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
+
+    <!-- Bloom pass, so the mark glows on the ink the way the trail does. -->
+    <path
+        android:pathData="M82.7,198.8 C87.0,181.1 98.3,98.3 108.5,92.4 C118.7,86.5 132.2,163.4 144.0,163.4 C155.8,163.4 169.3,86.5 179.5,92.4 C189.7,98.3 201.0,181.1 205.3,198.8"
+        android:strokeWidth="42"
+        android:strokeAlpha="0.16"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="82.7"
+                android:startY="198.8"
+                android:endX="205.3"
+                android:endY="92.4"
+                android:type="linear">
+                <item android:offset="0" android:color="@color/mapme_beacon" />
+                <item android:offset="1" android:color="@color/mapme_aurora" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <path
+        android:pathData="M82.7,198.8 C87.0,181.1 98.3,98.3 108.5,92.4 C118.7,86.5 132.2,163.4 144.0,163.4 C155.8,163.4 169.3,86.5 179.5,92.4 C189.7,98.3 201.0,181.1 205.3,198.8"
+        android:strokeWidth="17"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="82.7"
+                android:startY="198.8"
+                android:endX="205.3"
+                android:endY="92.4"
+                android:type="linear">
+                <item android:offset="0" android:color="@color/mapme_beacon" />
+                <item android:offset="1" android:color="@color/mapme_aurora" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- The live head, exactly where the trail ends. -->
+    <path
+        android:pathData="M205.3,186.8 A12,12 0 1,1 205.3,210.8 A12,12 0 1,1 205.3,186.8 Z"
+        android:fillColor="@color/mapme_pulse" />
+</vector>

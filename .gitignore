@@ -1,0 +1,37 @@
+# --- Gradle ---
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+local.properties
+
+# --- Android ---
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+bin/
+gen/
+out/
+release/
+captures/
+.externalNativeBuild/
+.cxx/
+*.keystore
+!debug.keystore
+
+# --- IDE ---
+.idea/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+
+# --- Brand fonts ---
+# Fetched at build time by the `fetchBrandFonts` Gradle task (see
+# docs/DESIGN_SYSTEM.md § Typography). They are deliberately not committed so
+# the repo stays free of binaries; the app degrades gracefully without them.
+# If you prefer reproducible offline builds, delete these two lines and commit
+# the .ttf files together with their OFL.txt licence.
+core/design/src/main/assets/fonts/*.ttf
+core/design/src/main/assets/fonts/OFL-*.txt

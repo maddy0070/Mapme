@@ -1,0 +1,82 @@
+# Sprint plan
+
+## Sprint 0 — Foundation (this one)
+
+**Goal:** establish the project and the visual system MapMe will be built in,
+without building any product feature.
+
+### Delivered
+
+- **Project.** Gradle 8.14.3 / AGP 8.7.3 / Kotlin 2.0.21, three modules, pinned
+  dependency catalogue, CI that tests, assembles a debug APK and lints.
+- **Design system** (`:core:design`): semantic colour with enforced contrast,
+  the two-typeface ramp with graceful fallback, space/radius/depth/blur/motion
+  tokens, the glass material with real backdrop refraction, a custom icon set,
+  a semantic haptic vocabulary, and a reduced-motion contract.
+- **Brand.** The MapMe mark — an M drawn as a journey by the same spline that
+  draws real trails — as the in-app mark, the adaptive launcher icon (with a
+  themed variant) and the cold-start splash.
+- **`TrailLine`.** The journey line: Catmull-Rom smoothed, time-coloured,
+  glowing, revealable along its own length.
+- **Domain vocabulary** (`:core:model`): `GeoPoint`, `TrackPoint`, `Journey`,
+  with haversine geometry and tests.
+- **Two screens.** A foundation screen that is honest about what this build is,
+  and the design system gallery — a workshop tool that ships in the app so the
+  system can be judged on real hardware.
+
+### Explicitly not delivered
+
+No location permission, no recording, no map, no storage, no history, no
+replay, no onboarding. All of that is a future sprint's, and asking for
+location before there is a journey to record would break §16.
+
+### Known gaps carried forward
+
+1. **The brand fonts are not committed.** They are fetched at build time. On a
+   network-restricted machine the app runs on the platform grotesque, which the
+   gallery says on screen. Bundle them (see the fonts README) if reproducible
+   offline builds matter more than a binary-free repo.
+2. **Backdrop blur re-composes per pane.** Correct and cheap over the
+   procedural aurora; must become a captured `GraphicsLayer` before it sits
+   over a live map.
+3. **The foundation screen is temporary.** It is replaced wholesale by the home
+   experience.
+4. **Light mode is unproven on device.** Defined, contrast-tested, never looked
+   at in sunlight.
+
+---
+
+## Sprint 1 — ready to start
+
+The foundation is arranged so Sprint 1 can be the first real feature without
+touching anything above. Whatever it turns out to be, these are already in
+place: theme, navigation graph with spatial transitions, glass, trail
+rendering, haptics, the domain types, and a CI pipeline that hands you an
+installable APK.
+
+If Sprint 1 is journey recording, the shape it slots into is:
+
+1. `:core:location` — sampling strategy and the foreground service. §15 lists
+   the failure modes that must be handled; none of them are optional.
+2. `:core:database` — Room, local only. §16.
+3. `:core:data` — the journey repository, the single place features ask.
+4. `feature/home` — the map, the live trail, floating glass information.
+
+And before any of it, the permission moment: a screen that explains *why*, in
+MapMe's voice, with no manipulation (§16). That screen is a design problem
+before it is an engineering one.
+
+The map engine decision (`decisions/0001-map-technology.md`) should be settled
+first if Sprint 1 touches the map, since it changes what the home screen is
+built on.
+
+---
+
+## How every sprint ends
+
+1. Self-review against constitution §26 — the full list, honestly.
+2. CI green: unit tests, assemble, lint.
+3. Install the CI artifact on the physical phone.
+4. Work the device checklist in `QA_CHECKLIST.md`. Ten meaningful passes over
+   the sprint's major flows (§27).
+5. Fix serious bugs before the next sprint starts. Not after.
