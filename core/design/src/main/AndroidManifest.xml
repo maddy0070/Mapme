@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The design system needs no permissions, no components and no metadata.
-     It draws. -->
-<manifest />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      The design system declares the one permission it actually uses, rather
+      than assuming every app that consumes it will remember to. MapMeHaptics
+      plays a shaped waveform for the milestone feeling, and VibrationEffect
+      needs this to do that.
+
+      VIBRATE is a normal permission: granted at install, no prompt, and it
+      reveals nothing about the person. It merges into any consuming app.
+    -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+</manifest>
