@@ -24,6 +24,22 @@ without building any product feature.
   and the design system gallery — a workshop tool that ships in the app so the
   system can be judged on real hardware.
 
+### Verified
+
+CI is green on the branch head: unit tests pass (the palette contrast checks
+and the haversine geometry among them), the debug APK assembles, and Android
+Lint reports no errors. The APK artifact on that run is the build to install.
+
+Two real defects were found by that first compile and fixed rather than worked
+around: `:core:design` was calling `Vibrator.vibrate` without declaring
+`VIBRATE` in its own manifest — it only worked because the app happened to
+declare it — and the font-fetch task had no network timeout, so it could have
+hung a build indefinitely instead of falling back.
+
+**Not yet verified: any of it on a phone.** Everything above is a machine
+saying the code is well-formed. Whether MapMe *looks* like MapMe is a question
+only the device can answer — see `QA_CHECKLIST.md`.
+
 ### Explicitly not delivered
 
 No location permission, no recording, no map, no storage, no history, no
