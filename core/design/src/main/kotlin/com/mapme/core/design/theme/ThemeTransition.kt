@@ -81,9 +81,10 @@ import kotlin.math.sin
  * The extra time is spent travelling, not waiting. That is a property of
  * [MapMeMotion.reveal] rather than of the duration — behind a hard ease-out,
  * 700ms would put three quarters of the movement in the first 150ms and then
- * crawl, which is slower to sit through and worse to look at. The boundary is
- * roughly a fifth of the way out at 150ms, half way at 250ms, and still moving
- * at 600ms.
+ * crawl, which is slower to sit through and worse to look at. The front moves
+ * at a very nearly constant speed instead, so the share of the screen that has
+ * changed over grows steadily from the tap until it settles. Roughly a fifth
+ * of the way out at 150ms, half way at 350ms, still moving at 600ms.
  */
 @Stable
 class ThemeTransition internal constructor() {

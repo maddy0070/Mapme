@@ -344,9 +344,22 @@ class ThemeTransitionTest {
 
         assertTrue("$at150 of the way out at 150ms: the boundary lunges", at150 < 0.35f)
         assertTrue("only $at150 at 150ms: nothing has visibly left the control", at150 > 0.08f)
-        assertTrue("$atHalf half way through: the middle is not doing the work", atHalf > 0.55f)
-        assertTrue("$atHalf half way through: it is already over", atHalf < 0.85f)
-        assertTrue("$at600 at 600ms: it finished early and the rest is dead time", at600 < 0.995f)
+        assertTrue("$at600 at 600ms: it finished early and the rest is dead time", at600 < 0.99f)
+
+        // The front travels at very nearly constant speed. Area goes as the
+        // square of the radius, so anything that front-loads the radius as
+        // well converts most of the screen at once and then creeps through a
+        // corner for the rest of the duration.
+        assertTrue(
+            "half way through the time the boundary is $atHalf of the way out; " +
+                "a front that is not travelling steadily does not read as spreading",
+            kotlin.math.abs(atHalf - 0.5f) < 0.15f,
+        )
+
+        // ...but it must not stop dead at full speed either.
+        val endSlope = (motion.reveal.transform(1f) - motion.reveal.transform(0.93f)) / 0.07f
+        assertTrue("the boundary halts at $endSlope of its average speed", endSlope < 0.6f)
+        assertTrue("the boundary stalls before it arrives", endSlope > 0.05f)
     }
 
     @Test
