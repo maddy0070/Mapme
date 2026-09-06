@@ -36,11 +36,14 @@
     <string name="onboarding_3_headline">Give it a year.</string>
     <string name="onboarding_3_body">This is what a life looks like from above. Yours is about to start drawing.</string>
 
-    <!-- Home, in its real first state: empty, and honest about it. -->
-    <string name="home_empty_headline">Your map is empty.</string>
-    <string name="home_empty_body">For now. The moment MapMe starts recording, every walk you take shows up right here.</string>
-    <string name="home_coming_next">Coming next</string>
-    <string name="home_coming_next_body">Journey recording. Until then, this is how MapMe is going to feel.</string>
+    <!--
+      Home, in its real first state. It has nothing to report, so it looks
+      forward instead of explaining itself. "Coming next / journey recording /
+      until then this is how it will feel" was a changelog wearing a card.
+    -->
+    <string name="home_next_up">Recording arrives next</string>
+    <string name="home_empty_headline">Your first line is coming.</string>
+    <string name="home_empty_body">This is where your days will land — every walk, every wrong turn, drawn as you go.</string>
     <string name="home_replay_intro">Watch the intro again</string>
     <string name="home_appearance_action">Change appearance</string>
 </resources>

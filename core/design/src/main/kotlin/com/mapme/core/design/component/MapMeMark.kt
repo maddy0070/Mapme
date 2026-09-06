@@ -65,6 +65,15 @@ fun MapMeMark(
     modifier: Modifier = Modifier,
     size: Dp = 56.dp,
     tint: Color = Color.Unspecified,
+    /**
+     * How much of the loop exists yet, 0..1.
+     *
+     * The mark is a journey, so it can be drawn rather than shown — the same
+     * gesture [TrailLine] makes, at logo scale. The stroke thickens as it goes
+     * instead of arriving at full weight, which is what stops a partial draw
+     * looking like a clipped one.
+     */
+    progress: Float = 1f,
     /** Sits the mark inside a squircle plate, the way a launcher icon does. */
     framed: Boolean = false,
 ) {
@@ -90,8 +99,13 @@ fun MapMeMark(
     ) {
         Canvas(modifier = Modifier.size(if (framed) size * 0.68f else size)) {
             val unit = this.size.minDimension / VIEWPORT
-            val centre = MarkGeometry.centreline.map { Offset(it.x * unit, it.y * unit) }
-            buildTaperedOutline(loop, centre, LOOP_START_HALF * unit, LOOP_END_HALF * unit)
+            val drawn = progress.coerceIn(0f, 1f)
+            val full = MarkGeometry.centreline
+            val visible = ((full.size - 1) * drawn).toInt().coerceAtLeast(1)
+            val centre = full.subList(0, visible + 1).map { Offset(it.x * unit, it.y * unit) }
+
+            val head = LOOP_START_HALF + (LOOP_END_HALF - LOOP_START_HALF) * drawn
+            buildTaperedOutline(loop, centre, LOOP_START_HALF * unit, head * unit)
             drawPath(
                 loop,
                 Brush.linearGradient(
@@ -100,12 +114,18 @@ fun MapMeMark(
                     end = centre.last(),
                 ),
             )
-            val dot = dotCentre()
-            drawCircle(
-                color = dotColor,
-                radius = DOT_RADIUS * unit,
-                center = Offset(dot.x * unit, dot.y * unit),
-            )
+
+            // The dot is the last thing to arrive: the loop reaches for it.
+            val dotAlpha = ((drawn - 0.72f) / 0.28f).coerceIn(0f, 1f)
+            if (dotAlpha > 0f) {
+                val dot = dotCentre()
+                drawCircle(
+                    color = dotColor,
+                    radius = DOT_RADIUS * unit * (0.7f + 0.3f * dotAlpha),
+                    center = Offset(dot.x * unit, dot.y * unit),
+                    alpha = dotAlpha,
+                )
+            }
         }
     }
 }

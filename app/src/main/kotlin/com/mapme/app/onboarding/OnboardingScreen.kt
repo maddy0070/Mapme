@@ -19,6 +19,10 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -29,6 +33,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapme.app.R
 import com.mapme.core.design.component.GlassCard
@@ -39,16 +44,43 @@ import com.mapme.core.design.component.MapMeButtonStyle
 import com.mapme.core.design.component.MapMeText
 import com.mapme.core.design.component.ThreadCamera
 import com.mapme.core.design.component.TrailLine
+import com.mapme.core.design.component.parallax
 import com.mapme.core.design.component.rememberJourneyThread
 import com.mapme.core.design.component.JourneyThread
 import com.mapme.core.design.icon.MapMeIcon
 import com.mapme.core.design.icon.MapMeIcons
+import com.mapme.core.design.theme.LocalReduceMotion
 import com.mapme.core.design.theme.MapMeTheme
 import com.mapme.core.design.theme.motionDuration
 import kotlin.math.abs
+import kotlin.math.cos
 import kotlin.math.exp
 import kotlin.math.ln
+import kotlin.math.sin
 import kotlinx.coroutines.launch
+
+/**
+ * A thread lying further back in the composition.
+ *
+ * These are not other people's journeys and they are not data — they are the
+ * same generated artwork at different seeds, drawn faint and small. Their only
+ * job is depth: something for the hero line to be *in front of*. Without them
+ * the introduction is a drawing on a blank page; with them it is a view into
+ * somewhere.
+ */
+private data class Backdrop(
+    val seed: Int,
+    /** How much of the camera move this layer feels. Less means further away. */
+    val parallax: Float,
+    val intensity: Float,
+    val width: Dp,
+    val count: Int,
+)
+
+private val BACKDROPS = listOf(
+    Backdrop(seed = JourneyThread.SIGNATURE_SEED + 977, parallax = 0.46f, intensity = 0.20f, width = 4.dp, count = 150),
+    Backdrop(seed = JourneyThread.SIGNATURE_SEED + 411, parallax = 0.74f, intensity = 0.33f, width = 5.dp, count = 150),
+)
 
 /**
  * One beat of the introduction.
@@ -126,7 +158,36 @@ fun OnboardingScreen(
     val pager = rememberPagerState(pageCount = { beats.size })
     val scope = rememberCoroutineScope()
     val motion = MapMeTheme.motion
+    val reduceMotion = LocalReduceMotion.current
     val drawDuration = motionDuration(motion.epic)
+
+    val backdrops = remember { BACKDROPS.map { it to JourneyThread.generate(it.count, it.seed) } }
+
+    // The world fades up before the hero line starts drawing on it, so the
+    // first thing you see is a place rather than a stroke on nothing.
+    val depth = remember { Animatable(if (reduceMotion) 1f else 0f) }
+    LaunchedEffect(Unit) {
+        if (!reduceMotion) depth.animateTo(1f, tween(motionDuration(motion.travel), easing = motion.gentle))
+    }
+
+    // A very slow wander, a few thousandths of the canvas wide. Individually
+    // invisible; collectively the difference between an illustration and a
+    // screenshot of one.
+    val drift: Float = if (reduceMotion) {
+        0f
+    } else {
+        val transition = rememberInfiniteTransition(label = "ThreadDrift")
+        val value by transition.animateFloat(
+            initialValue = 0f,
+            targetValue = (2f * Math.PI).toFloat(),
+            animationSpec = infiniteRepeatable(
+                animation = tween(38_000, easing = motion.linear),
+                repeatMode = RepeatMode.Restart,
+            ),
+            label = "ThreadDriftPhase",
+        )
+        value
+    }
 
     // The line draws itself once, on arrival. After that the pager owns it.
     val intro = remember { Animatable(0f) }
@@ -135,12 +196,33 @@ fun OnboardingScreen(
     }
 
     val position = pager.currentPage + pager.currentPageOffsetFraction
-    val camera = interpolateCamera(beats, position)
+    val aimed = interpolateCamera(beats, position)
+    val camera = aimed.copy(
+        focus = Offset(
+            aimed.focus.x + sin(drift) * 0.009f,
+            aimed.focus.y + cos(drift * 0.7f) * 0.007f,
+        ),
+    )
     val reveal = interpolateReveal(beats, position) * intro.value
     // Places only start appearing once there is enough line for them to sit on.
     val markerAlpha = ((position - 0.55f) / 0.6f).coerceIn(0f, 1f)
 
     MapMeBackground(modifier = modifier.fillMaxSize()) {
+        // Back to front. Each layer feels less of the camera move than the one
+        // in front of it, which is the whole of the depth: swipe, and the
+        // distance between them opens up.
+        backdrops.forEach { (layer, points) ->
+            TrailLine(
+                points = points,
+                modifier = Modifier.fillMaxSize(),
+                progress = 1f,
+                camera = camera.parallax(layer.parallax),
+                strokeWidth = layer.width,
+                head = false,
+                intensity = layer.intensity * depth.value,
+            )
+        }
+
         TrailLine(
             points = thread,
             modifier = Modifier.fillMaxSize(),

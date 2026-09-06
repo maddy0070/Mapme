@@ -30,7 +30,15 @@ data class MapMeMotion(
     /** A camera move across the same physical space. */
     val travel: Int = 780,
     /** The trail drawing itself. The moment the product is selling. */
-    val epic: Int = 1600,
+    val epic: Int = 1400,
+    /**
+     * A change spreading out from where it was touched.
+     *
+     * Faster than this and the boundary is not legible as a movement — it
+     * reads as the same blink it replaced. Slower and you are waiting for the
+     * interface to finish agreeing with you.
+     */
+    val theme: Int = 380,
 
     /** The default. Leaves quickly, arrives gently — the shape of mass. */
     val standard: Easing = CubicBezierEasing(0.22f, 0f, 0f, 1f),
@@ -42,6 +50,11 @@ data class MapMeMotion(
     val gentle: Easing = CubicBezierEasing(0.4f, 0f, 0.2f, 1f),
     /** Camera moves. Slow to start, long glide, soft stop. */
     val cinematic: Easing = CubicBezierEasing(0.16f, 0.8f, 0.12f, 1f),
+    /**
+     * Leaves under the finger, then glides. A change you caused should start
+     * before you have finished touching it.
+     */
+    val reveal: Easing = CubicBezierEasing(0.16f, 0.84f, 0.24f, 1f),
     val linear: Easing = Easing { it },
 ) {
     /** A control answering a press. No overshoot the eye can catch. */

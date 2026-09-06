@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.compositionLocalOf
@@ -38,11 +39,7 @@ fun MapMeTheme(
     content: @Composable () -> Unit,
 ) {
     val systemDark = isSystemInDarkTheme()
-    val dark = when (appearance.mode) {
-        ThemeMode.System -> systemDark
-        ThemeMode.Light -> false
-        ThemeMode.Dark -> true
-    }
+    val dark = appearance.mode.resolve(systemDark)
 
     val context = LocalContext.current
     val colors = remember(dark) { if (dark) mapMeDarkColors() else mapMeLightColors() }
@@ -64,6 +61,26 @@ fun MapMeTheme(
         }
     }
 
+    // A change the person asked for spreads out from where they touched it,
+    // rather than the whole interface blinking. The transition is driven from
+    // here because this is the one place that knows both the request and the
+    // colours it is heading towards.
+    val transition = rememberThemeTransition()
+    val motion = remember { MapMeMotion() }
+    LaunchedEffect(appearance.request) {
+        val pending = appearance.request ?: return@LaunchedEffect
+        transition.aimAt(pending.origin)
+        transition.play(
+            reduceMotion = reduceMotion,
+            durationMillis = motion.theme,
+            easing = motion.reveal,
+        ) {
+            appearance.commit(pending.mode)
+        }
+        appearance.clearRequest()
+    }
+
+    ThemeRevealHost(transition = transition, rimColor = colors.accent) {
     CompositionLocalProvider(
         LocalMapMeColors provides colors,
         LocalMapMeType provides type,
@@ -71,7 +88,7 @@ fun MapMeTheme(
         LocalMapMeRadius provides MapMeRadius(),
         LocalMapMeDepth provides depth,
         LocalMapMeBlur provides MapMeBlur(),
-        LocalMapMeMotion provides MapMeMotion(),
+        LocalMapMeMotion provides motion,
         LocalMapMeHaptics provides haptics,
         LocalMapMeBrandFonts provides fonts,
         LocalAppearance provides appearance,
@@ -79,6 +96,7 @@ fun MapMeTheme(
         LocalMapMeContentColor provides colors.textPrimary,
         content = content,
     )
+    }
 }
 
 internal val LocalMapMeBrandFonts = compositionLocalOf { BrandFonts.Fallback }

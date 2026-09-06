@@ -3,12 +3,14 @@ package com.mapme.core.design.theme
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 
 /**
@@ -30,7 +32,36 @@ enum class ThemeMode {
             Light -> "Light"
             Dark -> "Dark"
         }
+
+    /** What this mode actually resolves to right now. */
+    fun resolve(systemDark: Boolean): Boolean = when (this) {
+        System -> systemDark
+        Light -> false
+        Dark -> true
+    }
+
+    /** The order a single tappable control walks through. */
+    fun next(): ThemeMode = when (this) {
+        System -> Light
+        Light -> Dark
+        Dark -> System
+    }
 }
+
+/**
+ * A theme change that has been asked for but not yet applied.
+ *
+ * It carries [origin] because the whole point is that the new appearance
+ * spreads from the control you touched — see [ThemeTransition]. [id] makes
+ * every request distinct, so asking for the same mode twice still restarts the
+ * animation instead of being swallowed as "no change".
+ */
+@Immutable
+internal data class AppearanceRequest(
+    val mode: ThemeMode,
+    val origin: Offset,
+    val id: Long,
+)
 
 /**
  * Holds the chosen [ThemeMode] and remembers it across launches.
@@ -47,20 +78,28 @@ class AppearanceState internal constructor(
     var mode: ThemeMode by mutableStateOf(initial)
         private set
 
-    fun set(next: ThemeMode) {
+    internal var request: AppearanceRequest? by mutableStateOf(null)
+        private set
+
+    private var nextRequestId = 0L
+
+    /** Asks for [next], spreading from [origin] in window coordinates. */
+    fun select(next: ThemeMode, origin: Offset) {
+        request = AppearanceRequest(next, origin, nextRequestId++)
+    }
+
+    /** Auto → Light → Dark → Auto. What a single tappable control does. */
+    fun cycle(origin: Offset) = select(mode.next(), origin)
+
+    internal fun commit(next: ThemeMode) {
         if (next == mode) return
         mode = next
         prefs.edit().putString(KEY_MODE, next.name).apply()
     }
 
-    /** Auto → Light → Dark → Auto. What a single tappable control does. */
-    fun cycle() = set(
-        when (mode) {
-            ThemeMode.System -> ThemeMode.Light
-            ThemeMode.Light -> ThemeMode.Dark
-            ThemeMode.Dark -> ThemeMode.System
-        },
-    )
+    internal fun clearRequest() {
+        request = null
+    }
 
     internal companion object {
         const val PREFS = "mapme.appearance"

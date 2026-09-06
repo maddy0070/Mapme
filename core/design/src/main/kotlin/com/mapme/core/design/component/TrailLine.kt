@@ -61,6 +61,16 @@ fun TrailLine(
     head: Boolean = true,
     markers: List<Int> = emptyList(),
     markerAlpha: Float = 1f,
+    /**
+     * How present this line is, 0..1.
+     *
+     * Depth, not opacity for its own sake. A line further back in the
+     * composition is fainter *and* loses its outer bloom, because a distant
+     * light does not throw a halo you can resolve — dropping the wide pass
+     * below half intensity is what keeps layered threads from turning the
+     * screen into fog, and it costs a draw call less per layer.
+     */
+    intensity: Float = 1f,
 ) {
     val colors = MapMeTheme.colors
     val reduceMotion = LocalReduceMotion.current
@@ -85,6 +95,7 @@ fun TrailLine(
     // sixty times a second.
     val corePath = remember { Path() }
     val glowPath = remember { Path() }
+    val cometPath = remember { Path() }
 
     Canvas(modifier = modifier) {
         if (points.size < 2) return@Canvas
@@ -103,19 +114,24 @@ fun TrailLine(
             end = visible.last(),
         )
 
+        val present = intensity.coerceIn(0f, 1f)
+        if (present <= 0.01f) return@Canvas
+
         if (colors.trailGlows) {
             // Light in a dark room. Two diffuse passes read as bloom; three
             // costs frames for nothing the eye can find.
+            if (present > 0.5f) {
+                drawPath(
+                    glowPath,
+                    brush,
+                    alpha = 0.13f * present,
+                    style = Stroke(width * 4.2f, cap = StrokeCap.Round, join = StrokeJoin.Round),
+                )
+            }
             drawPath(
                 glowPath,
                 brush,
-                alpha = 0.13f,
-                style = Stroke(width * 4.2f, cap = StrokeCap.Round, join = StrokeJoin.Round),
-            )
-            drawPath(
-                glowPath,
-                brush,
-                alpha = 0.22f,
+                alpha = 0.22f * present,
                 style = Stroke(width * 2.1f, cap = StrokeCap.Round, join = StrokeJoin.Round),
             )
         } else {
@@ -125,18 +141,43 @@ fun TrailLine(
                 drawPath(
                     glowPath,
                     color = colors.shadowTint,
-                    alpha = 0.10f,
+                    alpha = 0.10f * present,
                     style = Stroke(width * 1.5f, cap = StrokeCap.Round, join = StrokeJoin.Round),
                 )
             }
         }
 
         buildTaperedOutline(corePath, visible, width * taper * 0.5f, width * 0.5f)
-        drawPath(corePath, brush)
+        drawPath(corePath, brush, alpha = present)
+
+        // The light that travels with the drawing.
+        //
+        // While the line is still arriving, the last stretch of it burns a
+        // little brighter and trails off behind — the glow moves *with* the
+        // tip instead of sitting on it. It is the only thing in the
+        // introduction that could be called an effect, and it disappears the
+        // instant the line is finished, because a light with nothing to lead
+        // is just decoration.
+        if (progress < 0.999f && present > 0.4f) {
+            val tail = visible.size - (visible.size * 0.12f).toInt().coerceAtLeast(2)
+            if (tail in 1 until visible.size) {
+                cometPath.reset()
+                cometPath.moveTo(visible[tail].x, visible[tail].y)
+                for (i in tail + 1 until visible.size) {
+                    cometPath.lineTo(visible[i].x, visible[i].y)
+                }
+                drawPath(
+                    cometPath,
+                    color = colors.trailHead,
+                    alpha = 0.30f * present,
+                    style = Stroke(width * 1.25f, cap = StrokeCap.Round, join = StrokeJoin.Round),
+                )
+            }
+        }
 
         markers.forEach { index ->
             val at = markerPosition(points, index, progress, camera, size) ?: return@forEach
-            drawPlace(at, width, colors.trailNear, colors.canvas, markerAlpha)
+            drawPlace(at, width, colors.trailNear, colors.canvas, markerAlpha * present)
         }
 
         if (head) {
@@ -147,6 +188,22 @@ fun TrailLine(
 
 /** Standing far enough back to see the whole thread. */
 val FullView: ThreadCamera = ThreadCamera(scale = 1f, focus = Offset(0.5f, 0.5f))
+
+/**
+ * The same camera move, felt less.
+ *
+ * A layer further back should zoom and pan a *fraction* of what the foreground
+ * does — that difference is the entire perception of depth. At [amount] = 1
+ * this is the identity; at 0 the layer is nailed to the screen and reads as a
+ * backdrop rather than part of the same world.
+ */
+fun ThreadCamera.parallax(amount: Float): ThreadCamera = ThreadCamera(
+    scale = 1f + (scale - 1f) * amount,
+    focus = Offset(
+        0.5f + (focus.x - 0.5f) * amount,
+        0.5f + (focus.y - 0.5f) * amount,
+    ),
+)
 
 // --- drawing ---------------------------------------------------------------
 
