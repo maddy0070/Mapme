@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The notification's small icon.
+
+  A status-bar icon is drawn as a silhouette — the system keeps the alpha and
+  throws the colour away — so this is one solid shape with a hole, not the
+  brand mark. The MapMe mark's open loop would close up into a blob at 24dp in
+  a status bar, which is precisely the failure the icon set was redrawn to
+  avoid in Sprint 1.1.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="#FFFFFFFF">
+
+    <!-- Ring. -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,4.6 C16.09,4.6 19.4,7.91 19.4,12 C19.4,16.09 16.09,19.4 12,19.4 C7.91,19.4 4.6,16.09 4.6,12 C4.6,7.91 7.91,4.6 12,4.6 Z M12,6.6 C9.02,6.6 6.6,9.02 6.6,12 C6.6,14.98 9.02,17.4 12,17.4 C14.98,17.4 17.4,14.98 17.4,12 C17.4,9.02 14.98,6.6 12,6.6 Z" />
+
+    <!-- The moving dot. -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,9.2 C13.55,9.2 14.8,10.45 14.8,12 C14.8,13.55 13.55,14.8 12,14.8 C10.45,14.8 9.2,13.55 9.2,12 C9.2,10.45 10.45,9.2 12,9.2 Z" />
+</vector>

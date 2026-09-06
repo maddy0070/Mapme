@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      The notification is not decoration: on Android it is the contract that
+      lets MapMe keep sampling with the screen off, and it is also the honest
+      disclosure that it is doing so. It says what is happening and how far,
+      never where.
+    -->
+    <string name="recording_channel_name">Journey recording</string>
+    <string name="recording_channel_description">Shown while MapMe is drawing your journey.</string>
+    <string name="recording_title">Drawing your journey</string>
+    <string name="recording_title_paused">Journey paused</string>
+    <string name="recording_pause">Pause</string>
+    <string name="recording_resume">Resume</string>
+    <string name="recording_stop">Finish</string>
+</resources>

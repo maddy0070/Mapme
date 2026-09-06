@@ -43,6 +43,8 @@ import org.maplibre.android.maps.Style
  *
  * @param user where to draw the "this is me" mark, or null for not-yet-known.
  * @param accuracyMetres the reported accuracy of [user], drawn as the halo.
+ * @param trail the journey so far, one list per segment. Segments are drawn
+ *   separately so a pause reads as a gap rather than a line nobody walked.
  * @param reloadKey bump to load the style again. This is what makes a retry
  *   button a real retry rather than a state change that looks like one.
  */
@@ -53,6 +55,7 @@ fun MapMeMap(
     user: GeoPoint? = null,
     accuracyMetres: Float? = null,
     userLabel: String = "Your location",
+    trail: List<List<GeoPoint>> = emptyList(),
     reloadKey: Int = 0,
     onLoadStateChange: (MapLoadState) -> Unit = {},
 ) {
@@ -63,6 +66,8 @@ fun MapMeMap(
     val loadState by rememberUpdatedState(onLoadStateChange)
 
     var map by remember { mutableStateOf<MapLibreMap?>(null) }
+    var style by remember { mutableStateOf<Style?>(null) }
+    val journeyLayer = remember { MapTrail() }
     var userScreen by remember { mutableStateOf(Offset.Unspecified) }
     var haloRadiusPx by remember { mutableStateOf(0f) }
 
@@ -137,9 +142,21 @@ fun MapMeMap(
     LaunchedEffect(map, styleJson, reloadKey) {
         val ready = map ?: return@LaunchedEffect
         loadState(MapLoadState.Loading)
-        ready.setStyle(Style.Builder().fromJson(styleJson)) {
+        style = null
+        ready.setStyle(Style.Builder().fromJson(styleJson)) { loaded ->
+            // The trail is reinstalled here rather than once at startup,
+            // because loading a style throws away every source and layer that
+            // was added to the previous one. Without this the journey
+            // disappears the moment someone switches theme mid-walk.
+            journeyLayer.install(loaded, colors)
+            style = loaded
             loadState(MapLoadState.Ready)
         }
+    }
+
+    LaunchedEffect(style, trail) {
+        val loaded = style ?: return@LaunchedEffect
+        journeyLayer.update(loaded, trail)
     }
 
     // A camera move the app asked for.
