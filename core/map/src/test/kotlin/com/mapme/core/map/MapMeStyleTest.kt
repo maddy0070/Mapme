@@ -76,14 +76,16 @@ class MapMeStyleTest {
                 "road" to colors.mapRoad, "roadMajor" to colors.mapRoadMajor,
                 "building" to colors.mapBuilding, "boundary" to colors.mapBoundary,
             )
+            val accentChroma = colors.accent.chroma()
             basemap.forEach { (label, colour) ->
                 assertTrue(
-                    "$name map $label is ${colour.saturation()} saturated; the basemap is the stage",
-                    colour.saturation() < 0.35f,
+                    "$name map $label has chroma ${colour.chroma()} against the accent's " +
+                        "$accentChroma — the basemap is the stage, not a performer",
+                    colour.chroma() < 0.25f,
                 )
                 assertTrue(
-                    "$name map $label sits at the accent's hue — it will fight the trail",
-                    hueDistance(colour, colors.accent) > 25f || colour.saturation() < 0.08f,
+                    "$name map $label sits at the accent's hue with enough colour to show it",
+                    hueDistance(colour, colors.accent) > 25f || colour.chroma() < 0.06f,
                 )
             }
         }
@@ -192,11 +194,20 @@ class MapMeStyleTest {
         return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
     }
 
-    private fun Color.saturation(): Float {
-        val mx = maxOf(red, green, blue)
-        val mn = minOf(red, green, blue)
-        return if (mx <= 0f) 0f else (mx - mn) / mx
-    }
+    /**
+     * How much colour is actually present — max channel minus min.
+     *
+     * Deliberately **not** HSV saturation, which was the first thing tried and
+     * was wrong. HSV divides by the brightest channel, so a near-black navy
+     * like the night water reads as 69% "saturated" while being, to the eye,
+     * almost black. Meanwhile the night land, green and building all sat at
+     * 0.33–0.35 and were one nudge from failing for the same reason.
+     *
+     * Chroma measures the thing the rule is actually about. Every colour in
+     * both basemaps lands under 0.13; the accent is 0.82. That gap is the
+     * design, and a threshold of 0.25 protects it with room to spare.
+     */
+    private fun Color.chroma(): Float = maxOf(red, green, blue) - minOf(red, green, blue)
 
     private fun Color.hue(): Float {
         val mx = maxOf(red, green, blue)
