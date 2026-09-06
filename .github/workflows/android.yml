@@ -57,6 +57,13 @@ jobs:
             echo "$f: $size bytes"
           done
 
+      # Runs before the compiler because the resource merger reports this
+      # class of mistake against a line number in a dependency's merged
+      # values.xml, nowhere near the file that caused it. Two builds have been
+      # lost to that already.
+      - name: Check string resource escaping
+        run: python3 tools/check-strings.py
+
       - name: Unit tests
         run: ./gradlew test
 
