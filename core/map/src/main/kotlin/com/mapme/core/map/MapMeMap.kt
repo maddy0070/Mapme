@@ -1,5 +1,8 @@
 package com.mapme.core.map
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.view.View
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,6 +43,8 @@ import org.maplibre.android.maps.Style
  *
  * @param user where to draw the "this is me" mark, or null for not-yet-known.
  * @param accuracyMetres the reported accuracy of [user], drawn as the halo.
+ * @param reloadKey bump to load the style again. This is what makes a retry
+ *   button a real retry rather than a state change that looks like one.
  */
 @Composable
 fun MapMeMap(
@@ -48,8 +53,10 @@ fun MapMeMap(
     user: GeoPoint? = null,
     accuracyMetres: Float? = null,
     userLabel: String = "Your location",
+    reloadKey: Int = 0,
     onLoadStateChange: (MapLoadState) -> Unit = {},
 ) {
+    val context = LocalContext.current
     val colors = MapMeTheme.colors
     val motion = MapMeTheme.motion
     val styleJson = remember(colors) { MapMeStyle.json(colors) }
@@ -79,6 +86,25 @@ fun MapMeMap(
 
     // Attach once. Everything after this is driven by state, not by rebuilding
     // the view — recreating a MapView is a visible flash and a real allocation.
+    // Failure has to come from the engine's own signals. Without these the
+    // Failed state is unreachable and the error card is decoration: setStyle's
+    // callback only ever fires on success, so a dead tile host would leave the
+    // map sitting on Loading forever.
+    DisposableEffect(mapView, context) {
+        val onFail = MapView.OnDidFailLoadingMapListener { message ->
+            loadState(MapLoadState.Failed(classifyFailure(context, message)))
+        }
+        val onStyle = MapView.OnDidFinishLoadingStyleListener {
+            loadState(MapLoadState.Ready)
+        }
+        mapView.addOnDidFailLoadingMapListener(onFail)
+        mapView.addOnDidFinishLoadingStyleListener(onStyle)
+        onDispose {
+            mapView.removeOnDidFailLoadingMapListener(onFail)
+            mapView.removeOnDidFinishLoadingStyleListener(onStyle)
+        }
+    }
+
     DisposableEffect(mapView) {
         mapView.getMapAsync { ready ->
             ready.uiSettings.apply {
@@ -108,7 +134,7 @@ fun MapMeMap(
     // is also why the reveal works over the map: the snapshot the transition
     // erases contains the *old* style's pixels, and the new style loads
     // underneath while the boundary travels.
-    LaunchedEffect(map, styleJson) {
+    LaunchedEffect(map, styleJson, reloadKey) {
         val ready = map ?: return@LaunchedEffect
         loadState(MapLoadState.Loading)
         ready.setStyle(Style.Builder().fromJson(styleJson)) {
@@ -216,4 +242,30 @@ private fun MapLibreMap.readPosition(): MapPosition = cameraPosition.let { c ->
         bearing = c.bearing,
         tilt = c.tilt,
     )
+}
+
+/**
+ * Turning an engine error string into something a person can act on.
+ *
+ * The engine reports one kind of problem — "loading failed" — for causes that
+ * want completely different sentences. Being offline is not the person's
+ * mistake and will fix itself; a style that will not parse is our bug and no
+ * amount of retrying will help. Connectivity is checked first because it is
+ * the only one we can establish rather than infer.
+ *
+ * The message is matched loosely on purpose: it is an engine-internal string,
+ * not an API, so anything unrecognised falls back to the tile case, which is
+ * the one where a retry is both harmless and most often right.
+ */
+private fun classifyFailure(context: Context, message: String?): MapFailure {
+    if (!context.hasNetwork()) return MapFailure.Offline
+    val text = message.orEmpty().lowercase()
+    return if ("style" in text) MapFailure.Style else MapFailure.Tiles
+}
+
+private fun Context.hasNetwork(): Boolean {
+    val manager = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return true
+    val network = manager.activeNetwork ?: return false
+    val capabilities = manager.getNetworkCapabilities(network) ?: return false
+    return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
 }

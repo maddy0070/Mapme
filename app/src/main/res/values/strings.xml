@@ -46,4 +46,45 @@
     <string name="home_empty_body">This is where your days will land — every walk, every wrong turn, drawn as you go.</string>
     <string name="home_replay_intro">Watch the intro again</string>
     <string name="home_appearance_action">Change appearance</string>
+
+    <!--
+      The map, and everything it can be waiting on.
+
+      Tone note: friendly, never cute twice in a row. The offline line is
+      allowed one turn of phrase because being offline is annoying and a
+      little warmth helps; the style failure is our fault and says so plainly
+      rather than making a joke at the person's expense.
+    -->
+    <string name="map_loading">Bringing your world in</string>
+    <string name="map_recentre">Centre on my location</string>
+
+    <string name="map_permission_eyebrow">Your location</string>
+    <string name="map_permission_headline">Put yourself on the map.</string>
+    <string name="map_permission_body">MapMe needs location to show where you are. It stays on your phone — nothing is recorded yet.</string>
+    <string name="map_permission_action">Show me on the map</string>
+
+    <string name="map_permission_blocked_headline">Location is switched off for MapMe.</string>
+    <string name="map_permission_blocked_body">Android won't ask again from here, so it has to be Settings. The map works without it — you just won't see yourself on it.</string>
+    <string name="map_permission_blocked_action">Open settings</string>
+
+    <string name="map_no_provider_headline">Your phone isn't sharing a location.</string>
+    <string name="map_no_provider_body">Location services are off. Turn them on and MapMe will find you.</string>
+    <string name="map_no_provider_action">Location settings</string>
+
+    <string name="map_offline_headline">Looks like the map took a wrong turn.</string>
+    <string name="map_offline_body">No connection, so the map can't load. It'll be here when you're back.</string>
+    <string name="map_tiles_headline">The map didn't quite arrive.</string>
+    <string name="map_tiles_body">Some of it is missing. Worth another go.</string>
+    <string name="map_style_headline">The map didn't load.</string>
+    <string name="map_style_body">That one's on us, not on your connection. It needs a fix from our side.</string>
+    <string name="map_retry">Try again</string>
+
+    <!--
+      The home state, now that the map is real. It says the true thing —
+      nothing has been recorded — without inventing a statistic to fill the
+      space, and looks forward rather than apologising.
+    -->
+    <string name="home_map_eyebrow">Nothing recorded yet</string>
+    <string name="home_map_headline">This is your world.</string>
+    <string name="home_map_body">Recording arrives next. When it does, your line starts here.</string>
 </resources>
