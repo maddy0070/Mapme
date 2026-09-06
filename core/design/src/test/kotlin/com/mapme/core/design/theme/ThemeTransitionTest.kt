@@ -213,7 +213,7 @@ class ThemeTransitionTest {
         assertEquals("the bars must be told exactly once", 1, passes)
         assertTrue(
             "told at $progressWhenPassed, before the boundary is clear of the top strip",
-            progressWhenPassed >= 0.4f,
+            progressWhenPassed >= 0.45f,
         )
         assertTrue("told at the very end, which is just a late flip", progressWhenPassed < 1f)
         job.cancelAndJoin()
@@ -262,6 +262,52 @@ class ThemeTransitionTest {
         }
     }
 
+    /**
+     * The invariant that stops the transition ending in a step.
+     *
+     * Only the radius inside `solidRadius` is completely erased; the band out
+     * to `revealRadius` still has some of the old theme in it. So it is the
+     * *solid* front that has to clear the furthest corner before the overlay
+     * is taken away. The first version overshot by `1 + feather`, which left
+     * the far corner 18% covered at the end — invisible at 380ms, an obvious
+     * snap once the transition was slowed down enough to watch.
+     */
+    @Test
+    fun `the old theme is completely gone before the overlay is removed`() {
+        val size = Size(1080f, 2400f)
+        listOf(
+            Offset(1000f, 120f), // where the control actually is
+            Offset(0f, 0f),
+            Offset(540f, 1200f),
+            Offset(1080f, 2400f),
+        ).forEach { origin ->
+            val solid = solidRadius(1f, origin, size)
+            val furthest = maxCornerDistance(origin, size)
+            assertTrue(
+                "from $origin the fully-erased radius stops ${furthest - solid} short of " +
+                    "the far corner, so that much of the old theme pops when the overlay goes",
+                solid >= furthest,
+            )
+        }
+    }
+
+    /** The graded edge softens on the way out rather than staying rigid. */
+    @Test
+    fun `the boundary starts crisp and ends diffuse`() {
+        val start = featherFraction(0f)
+        val end = featherFraction(1f)
+        assertTrue("the edge should widen as it travels, not narrow", end > start)
+        assertTrue("a band this wide stops reading as an edge at all", end < 0.4f)
+        assertTrue("too tight to read as a diffusion at the start", start > 0.1f)
+
+        var previous = -1f
+        for (step in 0..20) {
+            val f = featherFraction(step / 20f)
+            assertTrue("the feather narrowed at $step", f >= previous)
+            previous = f
+        }
+    }
+
     @Test
     fun `the reveal grows from nothing and never runs backwards`() {
         val origin = Offset(900f, 100f)
@@ -274,6 +320,33 @@ class ThemeTransitionTest {
             assertTrue("radius went backwards at $step", r >= previous)
             previous = r
         }
+    }
+
+    /**
+     * Duration alone does not make a transition watchable.
+     *
+     * Every other easing in the product front-loads its movement, because most
+     * of them move something small a short way. This one carries a boundary
+     * across the whole screen and has to stay interesting the entire time. Put
+     * a hard ease-out behind 700ms and three quarters of the travel happens in
+     * the first 150ms, leaving half a second of crawl — slower to sit through
+     * and worse to watch than the 380ms it replaced. That regression would be
+     * invisible to every other test here, so it is checked directly.
+     */
+    @Test
+    fun `the theme transition is both slow enough and shaped to use the time`() {
+        val motion = MapMeMotion()
+        assertTrue("the transition runs in ${motion.theme}ms", motion.theme in 650..750)
+
+        val at150 = motion.reveal.transform(150f / motion.theme)
+        val atHalf = motion.reveal.transform(0.5f)
+        val at600 = motion.reveal.transform(600f / motion.theme)
+
+        assertTrue("$at150 of the way out at 150ms: the boundary lunges", at150 < 0.35f)
+        assertTrue("only $at150 at 150ms: nothing has visibly left the control", at150 > 0.08f)
+        assertTrue("$atHalf half way through: the middle is not doing the work", atHalf > 0.55f)
+        assertTrue("$atHalf half way through: it is already over", atHalf < 0.85f)
+        assertTrue("$at600 at 600ms: it finished early and the rest is dead time", at600 < 0.995f)
     }
 
     @Test

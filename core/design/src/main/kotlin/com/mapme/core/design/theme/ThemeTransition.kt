@@ -63,18 +63,27 @@ import kotlin.math.sin
  *
  * A Material ripple is a hard-edged circle, and a hard circle sliding across
  * an interface reads as a wipe. The erase here is a soft radial gradient —
- * [FEATHER_FRACTION] of the radius is a graded edge, so the boundary is a
- * diffusion rather than a line. It is also not one circle but three, offset
- * from each other by a fraction of the radius, so the shape is gently
- * irregular and grows lopsided the way spilled light does. Riding just ahead
- * of the edge is a very faint warm rim in the incoming accent, which is the
- * only "light" in the effect — there are no particles and nothing sparkles.
+ * a fifth or so of the radius is a graded edge that widens as the front
+ * travels, so the boundary is a diffusion rather than a line. It is also not
+ * one circle but three, offset from each other by a fraction of the radius and
+ * breathing a few percent out of step, so the front reshapes itself on the way
+ * across instead of inflating rigidly. Riding just ahead of the edge is a very
+ * faint warm rim in the incoming accent, which is the only "light" in the
+ * effect — there are no particles and nothing sparkles.
  *
  * ## Timing
  *
- * [MapMeMotion.theme] is 380ms on an easing that leaves immediately and glides
- * to a stop. Faster and the boundary is not legible as a movement; slower and
- * you are waiting for the interface to finish agreeing with you.
+ * [MapMeMotion.theme] is 700ms. The first version ran in 380 and was legible
+ * on a desk but not on a phone: the boundary had crossed the screen before the
+ * eye caught up with it, so the change registered as having happened rather
+ * than as having been watched.
+ *
+ * The extra time is spent travelling, not waiting. That is a property of
+ * [MapMeMotion.reveal] rather than of the duration — behind a hard ease-out,
+ * 700ms would put three quarters of the movement in the first 150ms and then
+ * crawl, which is slower to sit through and worse to look at. The boundary is
+ * roughly a fifth of the way out at 150ms, half way at 250ms, and still moving
+ * at 600ms.
  */
 @Stable
 class ThemeTransition internal constructor() {
@@ -156,7 +165,9 @@ class ThemeTransition internal constructor() {
                 progress.animateTo(
                     targetValue = 1f,
                     animationSpec = tween(
-                        durationMillis = (remaining * CATCH_UP_MILLIS).toInt().coerceIn(40, 120),
+                        durationMillis = (remaining * durationMillis * CATCH_UP_SHARE)
+                            .toInt()
+                            .coerceIn(70, 190),
                         easing = easing,
                     ),
                 )
@@ -186,8 +197,17 @@ class ThemeTransition internal constructor() {
     }
 
     private companion object {
-        /** Full-length catch-up for a reveal interrupted at the very start. */
-        const val CATCH_UP_MILLIS = 150f
+        /**
+         * How much of the transition's own duration an interrupted boundary
+         * gets to finish in.
+         *
+         * Expressed as a share rather than a fixed number of milliseconds so
+         * the hurry stays in proportion if the transition is ever retimed —
+         * at 700ms a boundary caught half way out has about 130ms to clear the
+         * screen, which reads as hurrying rather than as being cut off. The
+         * clamp keeps a fast series of taps from either snapping or queueing.
+         */
+        const val CATCH_UP_SHARE = 0.36f
 
         /**
          * When anything that cannot be recorded should change over.
@@ -200,7 +220,7 @@ class ThemeTransition internal constructor() {
          * has changed over and the bar icons are switching onto a background
          * that already agrees with them.
          */
-        const val BOUNDARY_PASSED = 0.4f
+        const val BOUNDARY_PASSED = 0.45f
     }
 }
 
@@ -253,10 +273,10 @@ internal fun ThemeRevealHost(
                         val fraction = transition.progress.value
                         val origin = transition.originIn(size)
                         val radius = revealRadius(fraction, origin, size)
-                        val feather = radius * FEATHER_FRACTION
+                        val feather = radius * featherFraction(fraction)
 
                         drawLayer(snapshot)
-                        eraseOutward(origin, radius, feather)
+                        eraseOutward(origin, radius, feather, fraction)
                         drawEdgeLight(origin, radius, feather, rimColor, fraction)
                     },
             )
@@ -264,8 +284,19 @@ internal fun ThemeRevealHost(
     }
 }
 
-/** How much of the leading radius is graded rather than hard. */
-private const val FEATHER_FRACTION = 0.22f
+/**
+ * How much of the leading radius is graded rather than hard.
+ *
+ * It widens as the boundary travels. A wave front is tight where it starts and
+ * softer once it has spread, and the practical effect is that the edge is
+ * crisp enough to read as an edge under the control and diffuse enough by the
+ * far side of the screen that its departure is not an event.
+ */
+private const val FEATHER_START = 0.18f
+private const val FEATHER_END = 0.26f
+
+internal fun featherFraction(fraction: Float): Float =
+    FEATHER_START + (FEATHER_END - FEATHER_START) * fraction.coerceIn(0f, 1f)
 
 /**
  * The three lobes that make the boundary organic.
@@ -273,19 +304,40 @@ private const val FEATHER_FRACTION = 0.22f
  * Offsets are a fraction of the current radius, so the shape starts almost
  * round under the fingertip and grows steadily more lopsided — the way a
  * spill spreads, rather than the way a circle inflates.
+ *
+ * Each lobe also breathes, very slightly, on its own phase. Three fixed
+ * offsets scaled by a growing radius is a rigid shape being enlarged, and over
+ * two thirds of a second the eye reads that as a blob inflating. Letting their
+ * relative sizes drift a few percent out of step makes the front reshape
+ * itself as it travels, which is what the extra time is for. The amplitude is
+ * deliberately below the threshold of "something is wobbling".
  */
 private val LOBES = listOf(
-    Triple(0f, 0f, 1.00f),
-    Triple(0.11f, -0.07f, 0.93f),
-    Triple(-0.08f, 0.10f, 0.88f),
+    Lobe(0f, 0f, 1.00f, phase = 0f),
+    Lobe(0.11f, -0.07f, 0.93f, phase = 1.9f),
+    Lobe(-0.08f, 0.10f, 0.88f, phase = 3.7f),
 )
 
-private fun DrawScope.eraseOutward(origin: Offset, radius: Float, feather: Float) {
+private class Lobe(val dx: Float, val dy: Float, val scale: Float, val phase: Float)
+
+/** How far a lobe strays from its nominal size, at most. */
+private const val BREATH = 0.045f
+
+private fun DrawScope.eraseOutward(
+    origin: Offset,
+    radius: Float,
+    feather: Float,
+    fraction: Float,
+) {
     if (radius <= 0f) return
-    LOBES.forEach { (dx, dy, scale) ->
-        val r = radius * scale
+    LOBES.forEach { lobe ->
+        val breath = 1f + BREATH * sin(fraction * Math.PI.toFloat() * 1.35f + lobe.phase)
+        val r = radius * lobe.scale * breath
         if (r <= 1f) return@forEach
-        val centre = Offset(origin.x + radius * dx, origin.y + radius * dy)
+        val centre = Offset(
+            origin.x + radius * lobe.dx * breath,
+            origin.y + radius * lobe.dy * breath,
+        )
         val solid = ((r - feather) / r).coerceIn(0f, 0.999f)
         drawCircle(
             brush = Brush.radialGradient(
@@ -357,14 +409,32 @@ internal fun maxCornerDistance(origin: Offset, size: Size): Float {
 }
 
 /**
- * Radius at [fraction] of the way through.
+ * Radius at [fraction] of the way through — the outer edge of the graded band.
  *
- * Overshoots the far corner by the feather width, otherwise the graded edge
- * would still be visible in that corner when the animation ends and the last
- * sliver of the old theme would vanish in a step.
+ * The overshoot is what stops the transition ending in a step, and the amount
+ * of it is not a matter of taste. Only the part inside [solidRadius] is
+ * *completely* erased; beyond that the old theme is still partly there. So the
+ * boundary has to travel far enough that the **solid** front — not this outer
+ * edge — has passed the furthest corner by the time the animation ends.
+ *
+ * It used to overshoot by `1 + feather`, which is not enough: at the end the
+ * far corner was still 18% covered by the old theme, and that last 18%
+ * disappeared in one frame when the overlay was removed. Dividing by
+ * `1 - feather` instead puts the solid front exactly on the corner at
+ * [fraction] 1, so there is nothing left to pop.
  */
 internal fun revealRadius(fraction: Float, origin: Offset, size: Size): Float {
     val target = maxCornerDistance(origin, size)
-    val full = target * (1f + FEATHER_FRACTION) + 1f
+    val full = target / (1f - FEATHER_END) + 1f
     return max(0f, full * fraction.coerceIn(0f, 1f))
 }
+
+/**
+ * The radius inside which the old theme is completely gone.
+ *
+ * Everything between this and [revealRadius] is the graded band, where the two
+ * themes are both partly present. This is the number that decides whether the
+ * reveal actually finished.
+ */
+internal fun solidRadius(fraction: Float, origin: Offset, size: Size): Float =
+    revealRadius(fraction, origin, size) * (1f - featherFraction(fraction))

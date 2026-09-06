@@ -51,7 +51,9 @@ For every one of them:
 - [ ] The change **starts at the control you touched**, not at the screen centre or an edge.
 - [ ] The boundary is soft and slightly irregular. It is not a hard circle and not a Material ripple.
 - [ ] Background, text, borders, shadows, glass, the trail and the icons all change **together**. Nothing lags, nothing arrives twice.
-- [ ] Roughly a third of a second. It should feel finished, not hurried and not waited-on.
+- [ ] About seven tenths of a second, and **watchable for all of it** — the boundary should still be
+      moving around 600ms, not finished at 200 with the rest spent waiting.
+- [ ] The far corner does not pop. Watch the corner furthest from the control as it lands.
 - [ ] Nothing jumps at the start or the end.
 
 Then the ones that break things:
