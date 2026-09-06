@@ -207,3 +207,37 @@ private fun corner(
 
 /** Working resolution for the arc-length pass. Never drawn. */
 private const val DENSE_SAMPLES = 64
+
+/**
+ * MapMe's corner radii.
+ *
+ * The rule: the larger the surface, the larger the radius, so nothing ever
+ * looks like a scaled-up version of something smaller.
+ *
+ * Note what is missing — there are **no pills**. A fully rounded capsule is
+ * the single most common button shape in modern apps, which is precisely why
+ * MapMe does not use one. Every interactive surface is a squircle, cut from
+ * the same superellipse as the logo.
+ */
+@Immutable
+data class MapMeRadius(
+    val xs: Dp = 8.dp,
+    val sm: Dp = 12.dp,
+    val md: Dp = 18.dp,
+    val lg: Dp = 24.dp,
+    val xl: Dp = 30.dp,
+    val xxl: Dp = 40.dp,
+) {
+    val chip: Shape get() = SquircleShape(sm)
+    val control: Shape get() = SquircleShape(md)
+    val button: Shape get() = SquircleShape(lg)
+    val card: Shape get() = SquircleShape(xl)
+    val panel: Shape get() = SquircleShape(xxl)
+    val thumbnail: Shape get() = SquircleShape(md)
+
+    /** Sheets curve at the top and meet the screen edge square. */
+    val sheet: Shape get() = SquircleShape(xxl, xxl, 0.dp, 0.dp)
+
+    /** The frame an icon sits inside. Matches the launcher-icon mask family. */
+    val iconFrame: Shape get() = SquircleShape(md)
+}
