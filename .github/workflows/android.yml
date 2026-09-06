@@ -20,44 +20,25 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: MapLibre Android versions on Maven Central
+      - name: Which Kotlin each MapLibre release was built against
         run: |
-          curl -sS --fail-with-body \
-            https://repo1.maven.org/maven2/org/maplibre/gl/android-sdk/maven-metadata.xml \
-            | tr '<' '\n' | grep -E '^(version|latest|release)>' | tail -30 || echo "FAILED"
-
-      - name: MapLibre annotation plugin versions
-        run: |
-          curl -sS --fail-with-body \
-            https://repo1.maven.org/maven2/org/maplibre/gl/android-plugin-annotation-v9/maven-metadata.xml \
-            | tr '<' '\n' | grep -E '^(version|latest|release)>' | tail -12 || echo "FAILED"
-
-      - name: OpenFreeMap TileJSON — the schema a style has to target
-        run: |
-          curl -sS --fail-with-body https://tiles.openfreemap.org/planet > tilejson.json || echo "FAILED"
-          echo "--- bytes: $(wc -c < tilejson.json)"
-          python3 - <<'EOF'
-          import json
-          d = json.load(open('tilejson.json'))
-          print("tiles:", d.get("tiles"))
-          print("minzoom/maxzoom:", d.get("minzoom"), d.get("maxzoom"))
-          for L in d.get("vector_layers", []):
-              print(f"  {L['id']:22} z{L.get('minzoom')}-{L.get('maxzoom')}  "
-                    f"fields={sorted(L.get('fields', {}).keys())[:9]}")
-          EOF
-
-      - name: Label glyphs — a style names a font stack and must get it
-        run: |
-          for stack in "Noto%20Sans%20Regular" "Noto%20Sans%20Medium" "Open%20Sans%20Regular"; do
-            code=$(curl -sS -o /dev/null -w "%{http_code}" \
-              "https://tiles.openfreemap.org/fonts/$stack/0-255.pbf" || echo "ERR")
-            echo "$stack -> $code"
+          for v in 11.13.5 12.1.3 12.3.1 13.0.2 13.2.0 13.4.1 13.6.0; do
+            pom="https://repo1.maven.org/maven2/org/maplibre/gl/android-sdk/$v/android-sdk-$v.pom"
+            k=$(curl -sS "$pom" | tr -d ' \n' \
+                 | grep -o '<artifactId>kotlin-stdlib</artifactId><version>[^<]*' \
+                 | head -1 | sed 's/.*<version>//')
+            echo "maplibre $v -> kotlin-stdlib ${k:-none}"
           done
 
-      - name: Protomaps basemap build — the self-hosted alternative
+      - name: Compose BOM versions available
         run: |
-          curl -sS -o /dev/null -w "protomaps demo tiles: %{http_code}\n" \
-            "https://demo-bucket.protomaps.com/v4.pmtiles" || echo "FAILED"
+          curl -sS https://dl.google.com/dl/android/maven2/androidx/compose/compose-bom/maven-metadata.xml \
+            | tr '<' '\n' | grep -E '^version>' | tail -12 || echo FAILED
+
+      - name: Kotlin Compose plugin versions near 2.2
+        run: |
+          curl -sS https://repo1.maven.org/maven2/org/jetbrains/kotlin/compose-compiler-gradle-plugin/maven-metadata.xml \
+            | tr '<' '\n' | grep -E '^version>2\.2' | tail -12 || echo FAILED
 
   build:
     name: Test and assemble

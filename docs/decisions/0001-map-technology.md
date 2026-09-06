@@ -1,7 +1,8 @@
 # 0001 — Map technology
 
-**Status:** Proposed. Not decided, and deliberately not decided during the
-foundation sprint.
+**Status:** Superseded by [0002](0002-map-engine.md), which was written with
+network access and found three of the assumptions below to be wrong. Kept for
+the reasoning, not for the conclusions.
 **Decides:** what draws the basemap under the journey line.
 
 ## Why this is written now

@@ -48,6 +48,16 @@ object MapMeStyle {
     const val ATTRIBUTION = "© OpenStreetMap contributors"
 
     private const val SRC = "mapme"
+
+    /**
+     * The only font stack the tile host actually serves.
+     *
+     * Checked, not assumed: `Noto Sans Regular` returns glyphs, `Noto Sans
+     * Medium` and `Open Sans Regular` both 404. A style that names a missing
+     * stack does not fail — it renders a map with no labels at all, which is
+     * the kind of bug that survives review because everything still "works".
+     * Adding a weight here means checking the host first.
+     */
     private val TEXT_FONT = listOf("Noto Sans Regular")
 
     /** The style as a Kotlin tree. Tests read this; [json] serialises it. */

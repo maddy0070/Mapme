@@ -26,6 +26,7 @@ class MapMeIconsGeometryTest {
     private val icons = listOf(
         "ArrowRight" to MapMeIcons.ArrowRight,
         "Replay" to MapMeIcons.Replay,
+        "Locate" to MapMeIcons.Locate,
         "Sparkle" to MapMeIcons.Sparkle,
     )
 

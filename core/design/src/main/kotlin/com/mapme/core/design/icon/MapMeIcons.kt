@@ -101,6 +101,46 @@ object MapMeIcons {
         }
     }
 
+    /**
+     * Take me back to where I am.
+     *
+     * A ring with four ticks crossing it and a solid centre. The ticks are
+     * what make it read as *aim* rather than as a generic circle at 20dp —
+     * without them this glyph is indistinguishable from a record button.
+     *
+     * Sized down from the obvious construction so the tick ends clear the
+     * safe area with the stroke counted: ink runs 3.2..20.8, not 3..21.
+     */
+    val Locate: ImageVector by lazy {
+        icon("Locate") {
+            stroked {
+                // The ring.
+                moveTo(12f, 6.6f)
+                curveTo(14.98f, 6.6f, 17.4f, 9.02f, 17.4f, 12f)
+                curveTo(17.4f, 14.98f, 14.98f, 17.4f, 12f, 17.4f)
+                curveTo(9.02f, 17.4f, 6.6f, 14.98f, 6.6f, 12f)
+                curveTo(6.6f, 9.02f, 9.02f, 6.6f, 12f, 6.6f)
+                // Four ticks, crossing the ring rather than floating off it.
+                moveTo(12f, 4.2f)
+                lineTo(12f, 7.4f)
+                moveTo(12f, 19.8f)
+                lineTo(12f, 16.6f)
+                moveTo(4.2f, 12f)
+                lineTo(7.4f, 12f)
+                moveTo(19.8f, 12f)
+                lineTo(16.6f, 12f)
+            }
+            filled {
+                moveTo(12f, 10.3f)
+                curveTo(12.94f, 10.3f, 13.7f, 11.06f, 13.7f, 12f)
+                curveTo(13.7f, 12.94f, 12.94f, 13.7f, 12f, 13.7f)
+                curveTo(11.06f, 13.7f, 10.3f, 12.94f, 10.3f, 12f)
+                curveTo(10.3f, 11.06f, 11.06f, 10.3f, 12f, 10.3f)
+                close()
+            }
+        }
+    }
+
     /** Somewhere new. Only ever used for genuine discovery. */
     val Sparkle: ImageVector by lazy {
         icon("Sparkle") {
