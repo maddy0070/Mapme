@@ -11,6 +11,46 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Temporary. The authoring environment has no route to Maven Central or to a
+  # tile host, so the two facts this sprint depends on — which MapLibre
+  # versions exist, and what the tile schema actually contains — can only be
+  # established from a runner. Deleted once they are.
+  probe:
+    name: Probe the map stack
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: MapLibre Android versions on Maven Central
+        run: |
+          curl -sS --fail-with-body \
+            https://repo1.maven.org/maven2/org/maplibre/gl/android-sdk/maven-metadata.xml \
+            | tr '<' '\n' | grep -E '^(version|latest|release)>' | tail -30 || echo "FAILED"
+
+      - name: MapLibre annotation plugin versions
+        run: |
+          curl -sS --fail-with-body \
+            https://repo1.maven.org/maven2/org/maplibre/gl/android-plugin-annotation-v9/maven-metadata.xml \
+            | tr '<' '\n' | grep -E '^(version|latest|release)>' | tail -12 || echo "FAILED"
+
+      - name: OpenFreeMap TileJSON — the schema a style has to target
+        run: |
+          curl -sS --fail-with-body https://tiles.openfreemap.org/planet > tilejson.json || echo "FAILED"
+          echo "--- bytes: $(wc -c < tilejson.json)"
+          python3 - <<'EOF'
+          import json
+          d = json.load(open('tilejson.json'))
+          print("tiles:", d.get("tiles"))
+          print("minzoom/maxzoom:", d.get("minzoom"), d.get("maxzoom"))
+          for L in d.get("vector_layers", []):
+              print(f"  {L['id']:22} z{L.get('minzoom')}-{L.get('maxzoom')}  "
+                    f"fields={sorted(L.get('fields', {}).keys())[:9]}")
+          EOF
+
+      - name: Protomaps basemap build — the self-hosted alternative
+        run: |
+          curl -sS -o /dev/null -w "protomaps demo tiles: %{http_code}\n" \
+            "https://demo-bucket.protomaps.com/v4.pmtiles" || echo "FAILED"
+
   build:
     name: Test and assemble
     runs-on: ubuntu-latest
