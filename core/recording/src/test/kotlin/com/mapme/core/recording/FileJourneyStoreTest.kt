@@ -143,13 +143,26 @@ class FileJourneyStoreTest {
         assertNull(store.mostRecent())
     }
 
+    /**
+     * Ids become filenames, so an id containing `..` must not become a path.
+     *
+     * The first version of this test asserted that `/etc` did not exist after
+     * writing, which fails on every Linux machine ever built and says nothing
+     * about the store. The property worth checking is local: whatever was
+     * written landed inside the journeys directory, under a name that is a
+     * name rather than a route out of it.
+     */
     @Test
     fun `an id cannot escape the journeys directory`() {
         val nasty = "../../etc/passwd"
         write(nasty, listOf(listOf(point(0), point(1))))
 
-        val escaped = File(directory.parentFile.parentFile, "etc")
-        assertTrue("an id was allowed to write outside its directory", !escaped.exists())
+        val written = directory.listFiles().orEmpty()
+        assertEquals("the journal was written somewhere other than the journeys directory", 1, written.size)
+
+        val name = written.single().name
+        assertTrue("the filename still contains a path separator: $name", !name.contains(File.separatorChar))
+        assertTrue("the filename can still climb out: $name", !name.contains(".."))
         assertEquals(
             "the journey should still be readable under its sanitised name",
             2,

@@ -1,7 +1,6 @@
 package com.mapme.core.map
 
 import java.io.File
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -19,7 +18,11 @@ import org.junit.Test
  */
 class EngineContainmentTest {
 
-    private val allowed = setOf("MapMeMap.kt")
+    // Two files, both in :core:map, both named. The trail is separate from the
+    // surface because it is a different job — one owns a view's lifecycle, the
+    // other owns a source and two layers — and a single file doing both is how
+    // this stops being reviewable.
+    private val allowed = setOf("MapMeMap.kt", "MapTrail.kt")
 
     @Test
     fun `only the map surface knows which engine draws it`() {
@@ -40,10 +43,11 @@ class EngineContainmentTest {
             )
         }
 
-        assertEquals(
-            "the engine should be imported in exactly one file; found $offenders",
-            1,
-            offenders.size,
+        assertTrue(
+            "the engine is imported in ${offenders.size} files. It is allowed in " +
+                "${allowed.size}, both inside :core:map. Every file added here makes the " +
+                "engine harder to replace, so adding one is a decision, not a detail.",
+            offenders.size <= allowed.size,
         )
     }
 
