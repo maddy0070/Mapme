@@ -26,4 +26,6 @@ rootProject.name = "MapMe"
 // which modules future sprints are expected to add.
 include(":app")
 include(":core:design")
+include(":core:location")
+include(":core:map")
 include(":core:model")

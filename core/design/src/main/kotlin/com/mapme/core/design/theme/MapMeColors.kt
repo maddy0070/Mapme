@@ -66,6 +66,32 @@ data class MapMeColors(
     /** True only in dark mode, where the trail is light and may bloom. */
     val trailGlows: Boolean,
 
+    // --- the basemap ------------------------------------------------------
+    //
+    // The map is the stage, not the performance. These are deliberately the
+    // lowest-contrast tokens in the product: enough structure to read a city,
+    // never enough to argue with the journey drawn on top.
+
+    /** Everything that is not water, park or building. */
+    val mapLand: Color,
+
+    /** Parks, woodland, anything green enough to orient by. */
+    val mapGreen: Color,
+    val mapWater: Color,
+
+    /** Residential streets. */
+    val mapRoad: Color,
+
+    /** Arterials and motorways — the roads you navigate a city by. */
+    val mapRoadMajor: Color,
+
+    /** Separates a road from the ground. Darker than the ground on night. */
+    val mapRoadCasing: Color,
+    val mapBuilding: Color,
+    val mapBoundary: Color,
+    val mapLabel: Color,
+    val mapLabelHalo: Color,
+
     val isDark: Boolean,
 )
 
@@ -117,6 +143,17 @@ fun mapMeDarkColors(): MapMeColors = MapMeColors(
     trailNear = MapMePalette.Rose,
     trailHead = MapMePalette.Rose95,
     trailGlows = true,
+
+    mapLand = MapMePalette.MapNightLand,
+    mapGreen = MapMePalette.MapNightGreen,
+    mapWater = MapMePalette.MapNightWater,
+    mapRoad = MapMePalette.MapNightRoad,
+    mapRoadMajor = MapMePalette.MapNightRoadMajor,
+    mapRoadCasing = MapMePalette.MapNightCasing,
+    mapBuilding = MapMePalette.MapNightBuilding,
+    mapBoundary = MapMePalette.MapNightBoundary,
+    mapLabel = MapMePalette.OnNight10,
+    mapLabelHalo = MapMePalette.Night00,
 
     isDark = true,
 )
@@ -173,6 +210,17 @@ fun mapMeLightColors(): MapMeColors = MapMeColors(
     trailNear = MapMePalette.Rose70,
     trailHead = MapMePalette.Rose40,
     trailGlows = false,
+
+    mapLand = MapMePalette.MapPaperLand,
+    mapGreen = MapMePalette.MapPaperGreen,
+    mapWater = MapMePalette.MapPaperWater,
+    mapRoad = MapMePalette.MapPaperRoad,
+    mapRoadMajor = MapMePalette.MapPaperRoadMajor,
+    mapRoadCasing = MapMePalette.MapPaperCasing,
+    mapBuilding = MapMePalette.MapPaperBuilding,
+    mapBoundary = MapMePalette.MapPaperBoundary,
+    mapLabel = MapMePalette.OnPaper10,
+    mapLabelHalo = MapMePalette.Paper00,
 
     isDark = false,
 )

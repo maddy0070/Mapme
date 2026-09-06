@@ -86,6 +86,41 @@ internal object MapMePalette {
     val OnPaper20 = Color(0xFF6E6479)
 
     // --- Critical: destructive only ------------------------------------------
+    // --- the basemap ------------------------------------------------------
+    //
+    // The only pigments here that exist purely for the map. The interface
+    // palette is mixed for type and controls — small areas, high contrast —
+    // and a map needs the opposite: very large, very quiet fields that a
+    // rose-coloured line can sit on top of without a fight.
+    //
+    // Nothing here is rose, and nothing here is saturated. That is the whole
+    // rule. The journey is the only vivid thing MapMe ever draws, and a
+    // basemap that competes with it has misunderstood the product.
+
+    /** Night ground. A step up from the app canvas, so the map reads as a lit stage. */
+    val MapNightLand = Color(0xFF14111A)
+    val MapNightGreen = Color(0xFF16211B)
+    val MapNightWater = Color(0xFF0F1830)
+    val MapNightRoad = Color(0xFF262030)
+    val MapNightRoadMajor = Color(0xFF332C3E)
+
+    /** Roads are separated by a casing *darker* than the ground, not a brighter outline. */
+    val MapNightCasing = Color(0xFF100D15)
+    val MapNightBuilding = Color(0xFF1B1723)
+    val MapNightBoundary = Color(0xFF3A3345)
+
+    /** Paper ground. Warm and off-white: a white map is a spreadsheet. */
+    val MapPaperLand = Color(0xFFF5F0EE)
+    val MapPaperGreen = Color(0xFFE6EDE1)
+    val MapPaperWater = Color(0xFFD7E3F0)
+    val MapPaperRoad = Color(0xFFFFFFFF)
+
+    /** Arterials warm rather than yellow. Saturated roads are the noisy-map tell. */
+    val MapPaperRoadMajor = Color(0xFFFFF8EC)
+    val MapPaperCasing = Color(0xFFE3DAD9)
+    val MapPaperBuilding = Color(0xFFEAE2E0)
+    val MapPaperBoundary = Color(0xFFCFC4CC)
+
     val CriticalDark = Color(0xFFFF5A4E)
     val CriticalLight = Color(0xFFD62B1F)
 }

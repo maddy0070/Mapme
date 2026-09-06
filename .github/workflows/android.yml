@@ -46,6 +46,14 @@ jobs:
                     f"fields={sorted(L.get('fields', {}).keys())[:9]}")
           EOF
 
+      - name: Label glyphs — a style names a font stack and must get it
+        run: |
+          for stack in "Noto%20Sans%20Regular" "Noto%20Sans%20Medium" "Open%20Sans%20Regular"; do
+            code=$(curl -sS -o /dev/null -w "%{http_code}" \
+              "https://tiles.openfreemap.org/fonts/$stack/0-255.pbf" || echo "ERR")
+            echo "$stack -> $code"
+          done
+
       - name: Protomaps basemap build — the self-hosted alternative
         run: |
           curl -sS -o /dev/null -w "protomaps demo tiles: %{http_code}\n" \

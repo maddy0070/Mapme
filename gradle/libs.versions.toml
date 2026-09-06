@@ -22,6 +22,11 @@ junit = "4.13.2"
 androidxJunit = "1.2.1"
 espresso = "3.6.1"
 
+# The map engine. 13.6.0 is the current release on Maven Central; verified
+# from CI, because this machine cannot reach it. See ADR 0002.
+maplibre = "13.6.0"
+kotlinxCoroutines = "1.9.0"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
@@ -40,6 +45,10 @@ androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "u
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
+
+maplibre = { group = "org.maplibre.gl", name = "android-sdk", version.ref = "maplibre" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxJunit" }

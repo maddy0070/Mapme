@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      Tiles come over the network. Declared here rather than in the app so the
+      permission travels with the thing that actually needs it — if the map
+      module is ever removed, so is the reason for this line.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+</manifest>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      Foreground location only. There is no background permission here and
+      there will not be one until the sprint that records a journey while the
+      screen is off — asking for more than the current screen needs is how an
+      app teaches people to distrust its prompts.
+    -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!--
+      MapMe works without a GPS radio — coarse network location still puts you
+      on the map. Marking the features not-required keeps the app installable
+      on devices that lack them.
+    -->
+    <uses-feature android:name="android.hardware.location" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+</manifest>
