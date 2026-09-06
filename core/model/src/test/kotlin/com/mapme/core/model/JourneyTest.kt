@@ -24,7 +24,7 @@ class JourneyTest {
 
     @Test
     fun `a single reading is a journey of no distance`() {
-        val journey = Journey("j", listOf(reading(51.5, -0.12, 1_000)))
+        val journey = Journey.of("j", listOf(reading(51.5, -0.12, 1_000)))
         assertEquals(0.0, journey.distanceMetres, 0.0)
         assertEquals(0L, journey.durationMillis)
     }
@@ -33,7 +33,7 @@ class JourneyTest {
     fun `distance sums the legs rather than measuring the endpoints`() {
         // Out one degree of latitude and back again: 222 km travelled, and
         // zero metres from home. The first number is the one that matters.
-        val journey = Journey(
+        val journey = Journey.of(
             id = "loop",
             points = listOf(
                 reading(0.0, 0.0, 0),
@@ -47,7 +47,7 @@ class JourneyTest {
 
     @Test
     fun `average speed is distance over elapsed time`() {
-        val journey = Journey(
+        val journey = Journey.of(
             id = "walk",
             points = listOf(
                 reading(0.0, 0.0, 0),

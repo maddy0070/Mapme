@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      Recording continues while the phone is in a pocket, which on modern
+      Android means a foreground service of type "location" and nothing less.
+      An app that quietly stops sampling when the screen turns off would lose
+      most of every walk and never say so.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
+    <!-- The service's own notification. Android 13+ makes this a runtime ask. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application>
+        <service
+            android:name=".RecordingService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+    </application>
+</manifest>
