@@ -153,34 +153,57 @@ fun MapMeMap(
         camera.onPendingApplied()
     }
 
-    // Keep the mark under the finger during a pan. Recomputed from the
-    // engine's own projection rather than guessed, so it stays glued to the
-    // ground through a fling.
-    DisposableEffect(map, user) {
-        val ready = map
-        val point = user
-        if (ready == null || point == null) return@DisposableEffect onDispose { }
+    // Keep the mark under the finger during a pan. Recomputed from the engine's
+    // own projection rather than guessed, so it stays glued to the ground
+    // through a fling.
+    //
+    // The fix and its accuracy are read through rememberUpdatedState rather
+    // than being effect keys. As keys they looked harmless and meant both
+    // camera listeners were removed and re-added on *every* location update —
+    // twice a second, on the screen whose whole job is to not stutter.
+    val latestUser by rememberUpdatedState(user)
+    val latestAccuracy by rememberUpdatedState(accuracyMetres)
+
+    DisposableEffect(map) {
+        val ready = map ?: return@DisposableEffect onDispose { }
 
         fun sync() {
+            val point = latestUser
+            if (point == null) {
+                userScreen = Offset.Unspecified
+                return
+            }
             val screen = ready.projection.toScreenLocation(LatLng(point.latitude, point.longitude))
             userScreen = Offset(screen.x, screen.y)
             val metresPerPixel = ready.projection.getMetersPerPixelAtLatitude(point.latitude)
             haloRadiusPx = if (metresPerPixel > 0.0) {
-                ((accuracyMetres ?: 0f) / metresPerPixel).toFloat()
+                ((latestAccuracy ?: 0f) / metresPerPixel).toFloat()
             } else {
                 0f
             }
         }
-        sync()
 
         val onMove = MapLibreMap.OnCameraMoveListener { sync() }
         val onIdle = MapLibreMap.OnCameraIdleListener { sync() }
         ready.addOnCameraMoveListener(onMove)
         ready.addOnCameraIdleListener(onIdle)
+        sync()
         onDispose {
             ready.removeOnCameraMoveListener(onMove)
             ready.removeOnCameraIdleListener(onIdle)
         }
+    }
+
+    // A new fix with a still camera produces no camera event, so nothing above
+    // would move the mark. This is the only thing that redraws it while you
+    // stand still.
+    LaunchedEffect(map, user, accuracyMetres) {
+        val ready = map ?: return@LaunchedEffect
+        val point = user ?: run { userScreen = Offset.Unspecified; return@LaunchedEffect }
+        val screen = ready.projection.toScreenLocation(LatLng(point.latitude, point.longitude))
+        userScreen = Offset(screen.x, screen.y)
+        val metresPerPixel = ready.projection.getMetersPerPixelAtLatitude(point.latitude)
+        haloRadiusPx = if (metresPerPixel > 0.0) ((accuracyMetres ?: 0f) / metresPerPixel).toFloat() else 0f
     }
 }
 

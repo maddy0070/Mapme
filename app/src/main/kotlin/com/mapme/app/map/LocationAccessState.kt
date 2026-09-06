@@ -10,7 +10,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -139,6 +138,3 @@ private fun Context.openLocationSettings() {
         )
     }
 }
-
-/** Convenience for a screen that only cares whether it may draw the dot. */
-val State<LocationAccess>.canLocate: Boolean get() = value.canLocate
