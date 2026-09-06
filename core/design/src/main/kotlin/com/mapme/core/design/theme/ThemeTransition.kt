@@ -92,6 +92,18 @@ class ThemeTransition internal constructor() {
 
     internal val progress = Animatable(1f)
 
+    /**
+     * Which transition is currently the real one.
+     *
+     * [LaunchedEffect] cancels the outgoing reveal without waiting for it, so a
+     * superseded coroutine can run its cleanup *after* its replacement has
+     * already started capturing. Without this guard that late cleanup drops the
+     * phase back to Idle, the snapshot is never recorded, and the reveal draws a
+     * stale layer over a live interface. Only the newest transition is allowed
+     * to touch the phase on its way out.
+     */
+    private var generation = 0
+
     internal fun originIn(size: Size): Offset {
         val o = originInWindow
         if (o == Offset.Unspecified) return Offset(size.width / 2f, size.height / 2f)
@@ -110,9 +122,11 @@ class ThemeTransition internal constructor() {
      * Records the old interface, flips the theme, then erases outward.
      *
      * Cancellation is the normal case, not an error: tapping again mid-reveal
-     * cancels this and starts a fresh one. The `finally` is what guarantees a
-     * cancelled transition can never leave a half-erased overlay on screen or
-     * strand the interface between two themes.
+     * supersedes this one. Two things make that safe. The incoming transition
+     * first runs the outgoing boundary out to the edge over a few frames, so
+     * the interface never jumps to a finished state it was still travelling
+     * towards; and [generation] stops the superseded coroutine's cleanup from
+     * switching off the transition that replaced it.
      */
     internal suspend fun play(
         reduceMotion: Boolean,
@@ -127,7 +141,23 @@ class ThemeTransition internal constructor() {
             commit()
             return
         }
+        val mine = ++generation
         try {
+            // An interrupted reveal is not thrown away. Its boundary races to
+            // the edge in the time it has left, so the outgoing theme finishes
+            // arriving instead of popping into place — then the new one starts
+            // from the control you just touched. Snapping here is what makes
+            // rapid switching look broken.
+            if (phase == Phase.Revealing && progress.value < 1f) {
+                val remaining = 1f - progress.value
+                progress.animateTo(
+                    targetValue = 1f,
+                    animationSpec = tween(
+                        durationMillis = (remaining * CATCH_UP_MILLIS).toInt().coerceIn(40, 120),
+                        easing = easing,
+                    ),
+                )
+            }
             enter(Phase.Capturing)
             // Two frames, deliberately. The first lets the recording draw pass
             // happen; the second guarantees it finished before the colours
@@ -140,8 +170,14 @@ class ThemeTransition internal constructor() {
             enter(Phase.Revealing)
             progress.animateTo(1f, tween(durationMillis, easing = easing))
         } finally {
-            enter(Phase.Idle)
+            // Only if nothing has superseded us in the meantime.
+            if (generation == mine) enter(Phase.Idle)
         }
+    }
+
+    private companion object {
+        /** Full-length catch-up for a reveal interrupted at the very start. */
+        const val CATCH_UP_MILLIS = 150f
     }
 }
 

@@ -67,23 +67,35 @@ object MapMeIcons {
     /**
      * Go round again. Used for replaying the introduction.
      *
-     * An open loop with a solid head at its leading end. The head is filled
-     * rather than stroked because at 18dp a stroked arrowhead closes up into a
-     * blob.
+     * A loop open at the top, with a solid head at the end of the sweep. The
+     * head is filled rather than stroked because at 18dp a stroked arrowhead
+     * closes up into a blob.
+     *
+     * **The head is built from the arc's own tangent**, not placed by eye. The
+     * first version of this glyph passed every measurement in
+     * `MapMeIconsGeometryTest` — correct stroke, inside the safe area, centred
+     * — and still read as a "C" with a wart stuck to it, because the head
+     * pointed right while the curve at that point was travelling up and to the
+     * left. An arrowhead that disagrees with its own line does not say
+     * *rotate*; it says *mistake*. Tip, base and shoulders are all derived from
+     * the tangent and normal at the sweep's end, so the head cannot drift out
+     * of agreement with the curve again.
      */
     val Replay: ImageVector by lazy {
         icon("Replay") {
+            // A 304 degree arc, r 6.6 about the centre, leaving a gap at the
+            // top for the head to point into.
             stroked {
-                moveTo(17.35f, 8.9f)
-                curveTo(16.05f, 6.45f, 13.32f, 5.12f, 10.59f, 5.6f)
-                curveTo(7.86f, 6.08f, 5.75f, 8.26f, 5.36f, 11.01f)
-                curveTo(4.98f, 13.75f, 6.4f, 16.44f, 8.89f, 17.65f)
-                curveTo(11.39f, 18.87f, 14.38f, 18.34f, 16.3f, 16.35f)
+                moveTo(15.10f, 6.17f)
+                curveTo(17.77f, 7.60f, 19.14f, 10.66f, 18.40f, 13.60f)
+                curveTo(17.67f, 16.54f, 15.03f, 18.60f, 12.00f, 18.60f)
+                curveTo(8.97f, 18.60f, 6.33f, 16.54f, 5.60f, 13.60f)
+                curveTo(4.86f, 10.66f, 6.23f, 7.60f, 8.90f, 6.17f)
             }
             filled {
-                moveTo(16.5f, 7.29f)
-                lineTo(19.9f, 9.22f)
-                lineTo(16.19f, 11.19f)
+                moveTo(11.11f, 5.00f)
+                lineTo(9.24f, 8.09f)
+                lineTo(7.50f, 4.82f)
                 close()
             }
         }

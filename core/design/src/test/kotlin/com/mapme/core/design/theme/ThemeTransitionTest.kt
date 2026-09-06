@@ -92,6 +92,91 @@ class ThemeTransitionTest {
         }
     }
 
+    /**
+     * The one that a `cancelAndJoin` test cannot catch.
+     *
+     * `LaunchedEffect` cancels the outgoing reveal and starts the new one
+     * without waiting for the old coroutine to unwind, so the old `finally`
+     * lands *after* its replacement is already running. If that cleanup is
+     * unconditional it switches the live transition off: the snapshot is never
+     * recorded and the reveal draws a stale layer over the interface.
+     */
+    @Test
+    fun `a superseded reveal cannot switch off the one that replaced it`() = runBlocking {
+        val transition = ThemeTransition()
+
+        val firstClock = BroadcastFrameClock()
+        val first = launch(firstClock + Dispatchers.Unconfined) {
+            transition.play(false, 380, LinearEasing) { }
+        }
+        firstClock.sendFrame(0L)
+        firstClock.sendFrame(16_000_000L)
+        assertEquals(ThemeTransition.Phase.Revealing, transition.phase)
+        firstClock.sendFrame(120_000_000L)
+
+        // Tap again. Nobody joins the outgoing coroutine — exactly as Compose
+        // does it — so its cleanup runs whenever it gets round to it.
+        val secondClock = BroadcastFrameClock()
+        val second = launch(secondClock + Dispatchers.Unconfined) {
+            transition.play(false, 380, LinearEasing) { }
+        }
+        first.join()
+
+        assertTrue(
+            "the superseded reveal reset the transition that replaced it",
+            transition.phase != ThemeTransition.Phase.Idle,
+        )
+        second.cancelAndJoin()
+    }
+
+    /** An interrupted boundary finishes travelling rather than popping. */
+    @Test
+    fun `interrupting runs the outgoing boundary out before capturing again`() = runBlocking {
+        val transition = ThemeTransition()
+
+        val firstClock = BroadcastFrameClock()
+        val first = launch(firstClock + Dispatchers.Unconfined) {
+            transition.play(false, 380, LinearEasing) { }
+        }
+        firstClock.sendFrame(0L)
+        firstClock.sendFrame(16_000_000L)
+        firstClock.sendFrame(60_000_000L)
+        val interruptedAt = transition.progress.value
+        assertTrue("expected a reveal in flight to interrupt", interruptedAt < 1f)
+
+        val secondClock = BroadcastFrameClock()
+        val second = launch(secondClock + Dispatchers.Unconfined) {
+            transition.play(false, 380, LinearEasing) { }
+        }
+        first.join()
+
+        // Still showing the outgoing boundary, not a captured still.
+        assertEquals(ThemeTransition.Phase.Revealing, transition.phase)
+
+        // Drive frames until the new transition starts capturing, and check the
+        // invariant at exactly that moment: the old boundary is off the edge,
+        // so there is nothing left to jump.
+        var t = 0L
+        var captured = false
+        repeat(40) {
+            if (!captured) {
+                t += 16_000_000L
+                secondClock.sendFrame(t)
+                if (transition.phase == ThemeTransition.Phase.Capturing) {
+                    assertEquals(
+                        "captured mid-boundary — the interface would jump here",
+                        1f,
+                        transition.progress.value,
+                        0.0001f,
+                    )
+                    captured = true
+                }
+            }
+        }
+        assertTrue("the interrupting transition never reached its capture", captured)
+        second.cancelAndJoin()
+    }
+
     @Test
     fun `reduced motion applies the theme without any reveal at all`() = runBlocking {
         val transition = ThemeTransition()
