@@ -11,35 +11,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Temporary. The authoring environment has no route to Maven Central or to a
-  # tile host, so the two facts this sprint depends on — which MapLibre
-  # versions exist, and what the tile schema actually contains — can only be
-  # established from a runner. Deleted once they are.
-  probe:
-    name: Probe the map stack
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Which Kotlin each MapLibre release was built against
-        run: |
-          for v in 11.13.5 12.1.3 12.3.1 13.0.2 13.2.0 13.4.1 13.6.0; do
-            pom="https://repo1.maven.org/maven2/org/maplibre/gl/android-sdk/$v/android-sdk-$v.pom"
-            k=$(curl -sS "$pom" | tr -d ' \n' \
-                 | grep -o '<artifactId>kotlin-stdlib</artifactId><version>[^<]*' \
-                 | head -1 | sed 's/.*<version>//')
-            echo "maplibre $v -> kotlin-stdlib ${k:-none}"
-          done
-
-      - name: Compose BOM versions available
-        run: |
-          curl -sS https://dl.google.com/dl/android/maven2/androidx/compose/compose-bom/maven-metadata.xml \
-            | tr '<' '\n' | grep -E '^version>' | tail -12 || echo FAILED
-
-      - name: Kotlin Compose plugin versions near 2.2
-        run: |
-          curl -sS https://repo1.maven.org/maven2/org/jetbrains/kotlin/compose-compiler-gradle-plugin/maven-metadata.xml \
-            | tr '<' '\n' | grep -E '^version>2\.2' | tail -12 || echo FAILED
-
   build:
     name: Test and assemble
     runs-on: ubuntu-latest

@@ -11,7 +11,7 @@
 
 [versions]
 agp = "8.7.3"
-kotlin = "2.0.21"
+kotlin = "2.2.21"
 composeBom = "2024.12.01"
 coreKtx = "1.15.0"
 lifecycle = "2.8.7"
@@ -22,8 +22,13 @@ junit = "4.13.2"
 androidxJunit = "1.2.1"
 espresso = "3.6.1"
 
-# The map engine. 13.6.0 is the current release on Maven Central; verified
-# from CI, because this machine cannot reach it. See ADR 0002.
+# The map engine. 13.6.0 is current on Maven Central.
+#
+# It also sets the project's Kotlin floor: MapLibre 13.2.0 and later are built
+# with Kotlin 2.2 and depend on kotlin-stdlib 2.2.10, so a project on 2.0.x
+# fails the metadata check (and then crashes the compiler reporting it).
+# 13.0.2 and earlier are on stdlib 2.0.20. Checked release by release from CI
+# rather than guessed — see ADR 0002.
 maplibre = "13.6.0"
 kotlinxCoroutines = "1.9.0"
 

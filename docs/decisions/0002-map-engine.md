@@ -64,9 +64,30 @@ because it is a URL:
 - the schema is **OpenMapTiles**, which MapTiler, a self-hosted tile server and
   a Protomaps archive all also serve. Moving is a source URL, not a restyle.
 
+## The engine sets the project's Kotlin floor
+
+Worth writing down because it is invisible until it bites: **MapLibre 13.2.0
+and later are compiled with Kotlin 2.2** and depend on `kotlin-stdlib 2.2.10`.
+On a project still building with Kotlin 2.0.x the metadata check fails, and the
+compiler then crashes while trying to report it — an internal compiler error
+that looks like a bug in your own code rather than a version mismatch.
+
+Checked release by release from CI:
+
+| MapLibre | kotlin-stdlib |
+| --- | --- |
+| 11.13.5 – 13.0.2 | 2.0.20 |
+| 13.2.0 – 13.6.0 | 2.2.10 |
+
+So the choice was to pin the engine at 13.0.2 or move the project to Kotlin
+2.2. **MapMe moved** — Kotlin `2.2.21`. Five modules and no recording code yet
+is the cheapest this upgrade will ever be, and pinning six minor versions back
+on the component the whole product renders through is debt with no upside.
+
 ## Consequences
 
 - **APK grows.** MapLibre carries native renderers for four ABIs.
+- **Kotlin is now 2.2.21**, driven by the engine rather than chosen for itself.
 - **Tiles are a network dependency.** Offline gets its own sprint; the load and
   failure states in this one are built to say so honestly rather than hang.
 - **The style is now design work under version control.** `MapMeStyle.kt`
