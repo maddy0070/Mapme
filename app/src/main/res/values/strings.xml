@@ -64,19 +64,19 @@
     <string name="map_permission_action">Show me on the map</string>
 
     <string name="map_permission_blocked_headline">Location is switched off for MapMe.</string>
-    <string name="map_permission_blocked_body">Android won't ask again from here, so it has to be Settings. The map works without it — you just won't see yourself on it.</string>
+    <string name="map_permission_blocked_body">Android won\'t ask again from here, so it has to be Settings. The map works without it — you just won\'t see yourself on it.</string>
     <string name="map_permission_blocked_action">Open settings</string>
 
-    <string name="map_no_provider_headline">Your phone isn't sharing a location.</string>
+    <string name="map_no_provider_headline">Your phone isn\'t sharing a location.</string>
     <string name="map_no_provider_body">Location services are off. Turn them on and MapMe will find you.</string>
     <string name="map_no_provider_action">Location settings</string>
 
     <string name="map_offline_headline">Looks like the map took a wrong turn.</string>
-    <string name="map_offline_body">No connection, so the map can't load. It'll be here when you're back.</string>
-    <string name="map_tiles_headline">The map didn't quite arrive.</string>
+    <string name="map_offline_body">No connection, so the map can\'t load. It\'ll be here when you\'re back.</string>
+    <string name="map_tiles_headline">The map didn\'t quite arrive.</string>
     <string name="map_tiles_body">Some of it is missing. Worth another go.</string>
-    <string name="map_style_headline">The map didn't load.</string>
-    <string name="map_style_body">That one's on us, not on your connection. It needs a fix from our side.</string>
+    <string name="map_style_headline">The map didn\'t load.</string>
+    <string name="map_style_body">That one\'s on us, not on your connection. It needs a fix from our side.</string>
     <string name="map_retry">Try again</string>
 
     <!--
