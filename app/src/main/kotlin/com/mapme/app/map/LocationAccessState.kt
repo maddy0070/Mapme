@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -89,10 +90,20 @@ fun rememberLocationAccess(provider: LocationProvider): LocationAccessController
             access = access,
             request = {
                 launcher.launch(
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                    ),
+                    buildList {
+                        add(Manifest.permission.ACCESS_FINE_LOCATION)
+                        add(Manifest.permission.ACCESS_COARSE_LOCATION)
+                        // Asked in the same breath rather than as a second
+                        // prompt later. Recording needs a foreground-service
+                        // notification, and Android 13 made that a runtime
+                        // grant; two separate dialogs for one feature is how
+                        // people learn to dismiss both. Refusing it does not
+                        // stop recording — the service still runs, it just
+                        // loses its label.
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            add(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    }.toTypedArray(),
                 )
             },
             openAppSettings = { context.openAppSettings() },

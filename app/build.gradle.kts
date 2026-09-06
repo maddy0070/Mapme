@@ -69,6 +69,7 @@ dependencies {
     implementation(project(":core:location"))
     implementation(project(":core:map"))
     implementation(project(":core:model"))
+    implementation(project(":core:recording"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)

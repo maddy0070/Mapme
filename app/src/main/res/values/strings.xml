@@ -27,7 +27,7 @@
     <string name="onboarding_next">Next</string>
     <string name="onboarding_start">Start my map</string>
 
-    <string name="onboarding_1_headline">You\'re already drawing it.</string>
+    <string name="onboarding_1_headline">You\\'re already drawing it.</string>
     <string name="onboarding_1_body">Every day you move through the world and leave a line behind you. Nobody has been keeping it.</string>
 
     <string name="onboarding_2_headline">MapMe keeps it.</string>
@@ -64,19 +64,19 @@
     <string name="map_permission_action">Show me on the map</string>
 
     <string name="map_permission_blocked_headline">Location is switched off for MapMe.</string>
-    <string name="map_permission_blocked_body">Android won\'t ask again from here, so it has to be Settings. The map works without it — you just won\'t see yourself on it.</string>
+    <string name="map_permission_blocked_body">Android won\\'t ask again from here, so it has to be Settings. The map works without it — you just won\\'t see yourself on it.</string>
     <string name="map_permission_blocked_action">Open settings</string>
 
-    <string name="map_no_provider_headline">Your phone isn\'t sharing a location.</string>
+    <string name="map_no_provider_headline">Your phone isn\\'t sharing a location.</string>
     <string name="map_no_provider_body">Location services are off. Turn them on and MapMe will find you.</string>
     <string name="map_no_provider_action">Location settings</string>
 
     <string name="map_offline_headline">Looks like the map took a wrong turn.</string>
-    <string name="map_offline_body">No connection, so the map can\'t load. It\'ll be here when you\'re back.</string>
-    <string name="map_tiles_headline">The map didn\'t quite arrive.</string>
+    <string name="map_offline_body">No connection, so the map can\\'t load. It\\'ll be here when you\\'re back.</string>
+    <string name="map_tiles_headline">The map didn\\'t quite arrive.</string>
     <string name="map_tiles_body">Some of it is missing. Worth another go.</string>
-    <string name="map_style_headline">The map didn\'t load.</string>
-    <string name="map_style_body">That one\'s on us, not on your connection. It needs a fix from our side.</string>
+    <string name="map_style_headline">The map didn\\'t load.</string>
+    <string name="map_style_body">That one\\'s on us, not on your connection. It needs a fix from our side.</string>
     <string name="map_retry">Try again</string>
 
     <!--
@@ -87,4 +87,35 @@
     <string name="home_map_eyebrow">Nothing recorded yet</string>
     <string name="home_map_headline">This is your world.</string>
     <string name="home_map_body">Recording arrives next. When it does, your line starts here.</string>
+
+    <!--
+      Recording. The verbs are MapMe's: you start a journey and you finish it,
+      you do not "start tracking" or "stop recording". The product is a record
+      of a life, and the words on the buttons are the first place that is
+      either true or not.
+    -->
+    <string name="journey_start">Start journey</string>
+    <string name="journey_start_hint">Begin drawing your journey</string>
+    <string name="journey_pause">Pause</string>
+    <string name="journey_resume">Resume</string>
+    <string name="journey_finish">Finish</string>
+    <string name="journey_finish_confirm">Finish this journey?</string>
+    <string name="journey_finish_yes">Yes, finish</string>
+    <string name="journey_keep_walking">Keep walking</string>
+    <string name="journey_recording">Recording</string>
+    <string name="journey_paused">Paused</string>
+    <string name="journey_paused_body">Nothing is being recorded. Your journey is safe.</string>
+    <string name="journey_waiting">Finding you</string>
+    <string name="journey_waiting_body">Waiting for a good enough fix to start drawing.</string>
+    <string name="journey_saving">Saving your journey</string>
+
+    <!-- The moment the sprint exists for. Said plainly, once. -->
+    <string name="journey_done_eyebrow">Journey saved</string>
+    <string name="journey_done_headline">You were here.</string>
+    <string name="journey_done_action">Done</string>
+    <string name="journey_discard">Delete</string>
+
+    <string name="journey_error_permission">MapMe lost access to your location, so the journey stopped there. What you walked is saved.</string>
+    <string name="journey_error_unavailable">Your phone stopped sharing a location, so the journey stopped there. What you walked is saved.</string>
+    <string name="journey_error_storage">The journey could not be written to this phone. Nothing was lost that was already saved.</string>
 </resources>

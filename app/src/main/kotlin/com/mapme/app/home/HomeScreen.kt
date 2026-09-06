@@ -41,6 +41,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.mapme.app.R
+import com.mapme.app.map.RecordingControls
 import com.mapme.app.map.rememberLocationAccess
 import com.mapme.core.design.component.GlassCard
 import com.mapme.core.design.component.GlassTone
@@ -64,6 +65,11 @@ import com.mapme.core.map.MapCameraState
 import com.mapme.core.map.MapFailure
 import com.mapme.core.map.MapLoadState
 import com.mapme.core.map.MapMeMap
+import com.mapme.core.recording.Recording
+import com.mapme.core.recording.RecordingService
+import com.mapme.core.recording.RecordingSnapshot
+import com.mapme.core.recording.RecordingState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 /**
  * Home, now that the map is real.
@@ -97,6 +103,26 @@ fun HomeScreen(
     var load by remember { mutableStateOf<MapLoadState>(MapLoadState.Loading) }
     var reloadKey by remember { mutableStateOf(0) }
 
+    // The recorder lives for the process, not for this composable, so a
+    // rotation or an Activity recreation cannot interrupt a walk.
+    val recorder = remember(context.applicationContext) { Recording.recorder(context) }
+    val recording by recorder.snapshot.collectAsStateWithLifecycle()
+
+    // The last journey is offered back on launch. It is also how a walk
+    // survives the process being killed mid-recording: the journal is already
+    // on disk, so there is something to come back to.
+    LaunchedEffect(recorder) {
+        if (recorder.state == RecordingState.Idle) {
+            Recording.store(context).mostRecent()?.let(recorder::recover)
+        }
+    }
+
+    // Starting a journey brings the camera back to the person once. After that
+    // the ordinary rule applies: pan away and it stays where you put it.
+    LaunchedEffect(recording.state) {
+        if (recording.state == RecordingState.Recording) camera.recentre(fix?.point)
+    }
+
     // Collected only while permitted, and dropped the moment it is not: the
     // provider stops the moment this effect leaves, so nothing is listening to
     // the GPS behind a screen that is not showing it.
@@ -117,6 +143,9 @@ fun HomeScreen(
             modifier = Modifier.fillMaxSize(),
             user = fix?.point,
             accuracyMetres = fix?.accuracyMetres,
+            // One list per segment, so a pause is drawn as a gap rather than
+            // bridged with a line nobody walked.
+            trail = recording.journey.segments.map { segment -> segment.map { it.position } },
             reloadKey = reloadKey,
             onLoadStateChange = { load = it },
         )
@@ -160,6 +189,8 @@ fun HomeScreen(
             BottomCard(
                 load = load,
                 prompt = LocationPrompt.of(access.access),
+                recording = recording,
+                canRecord = access.access.canLocate,
                 onGrant = access.request,
                 onAppSettings = access.openAppSettings,
                 onLocationSettings = access.openLocationSettings,
@@ -167,6 +198,12 @@ fun HomeScreen(
                 // the state alone would only redraw the card.
                 onRetry = { reloadKey++ },
                 onReplayIntro = onReplayIntro,
+                onStart = { RecordingService.start(context) },
+                onPause = { RecordingService.pause(context) },
+                onResume = { RecordingService.resume(context) },
+                onFinish = { RecordingService.stop(context) },
+                onDone = recorder::clear,
+                onDiscard = recorder::discard,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = MapMeTheme.space.screenEdge)
@@ -187,11 +224,19 @@ fun HomeScreen(
 private fun BottomCard(
     load: MapLoadState,
     prompt: LocationPrompt,
+    recording: RecordingSnapshot,
+    canRecord: Boolean,
     onGrant: () -> Unit,
     onAppSettings: () -> Unit,
     onLocationSettings: () -> Unit,
     onRetry: () -> Unit,
     onReplayIntro: () -> Unit,
+    onStart: () -> Unit,
+    onPause: () -> Unit,
+    onResume: () -> Unit,
+    onFinish: () -> Unit,
+    onDone: () -> Unit,
+    onDiscard: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     GlassCard(modifier = modifier, tone = GlassTone.Dense) {
@@ -267,22 +312,44 @@ private fun BottomCard(
                 }
 
                 else -> {
-                    MapMePill(
-                        text = stringResource(R.string.home_map_eyebrow),
-                        tone = PillTone.Neutral,
+                    // The emotional line belongs to the empty state only. Once
+                    // a walk is in progress or one has just finished, the
+                    // journey is the thing on screen and this copy would be
+                    // talking over it.
+                    val untouched = recording.state == RecordingState.Idle && recording.journey.isEmpty
+
+                    if (untouched) {
+                        MapMePill(
+                            text = stringResource(R.string.home_map_eyebrow),
+                            tone = PillTone.Neutral,
+                        )
+                        Message(
+                            headline = stringResource(R.string.home_map_headline),
+                            body = stringResource(R.string.home_map_body),
+                        )
+                    }
+
+                    RecordingControls(
+                        snapshot = recording,
+                        canRecord = canRecord,
+                        onStart = onStart,
+                        onPause = onPause,
+                        onResume = onResume,
+                        onFinish = onFinish,
+                        onDone = onDone,
+                        onDiscard = onDiscard,
                     )
-                    Message(
-                        headline = stringResource(R.string.home_map_headline),
-                        body = stringResource(R.string.home_map_body),
-                    )
-                    MapMeButton(
-                        text = stringResource(R.string.home_replay_intro),
-                        onClick = onReplayIntro,
-                        style = MapMeButtonStyle.Ghost,
-                        trailing = {
-                            MapMeIcon(MapMeIcons.Replay, contentDescription = null, size = 18.dp)
-                        },
-                    )
+
+                    if (untouched) {
+                        MapMeButton(
+                            text = stringResource(R.string.home_replay_intro),
+                            onClick = onReplayIntro,
+                            style = MapMeButtonStyle.Ghost,
+                            trailing = {
+                                MapMeIcon(MapMeIcons.Replay, contentDescription = null, size = 18.dp)
+                            },
+                        )
+                    }
                 }
             }
         }
