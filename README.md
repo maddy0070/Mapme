@@ -10,8 +10,9 @@ where you go and turns that movement into a visual history of your life. Not a
 navigation app, not a fitness tracker, not a GPS logger — a personal map of
 someone's life.
 
-**Status: foundation.** The project, the design system and the brand exist.
-Journey recording does not yet. See [`docs/SPRINT_PLAN.md`](docs/SPRINT_PLAN.md).
+**Status: visual identity.** The design system, the brand and the introduction
+exist. Journey recording does not yet. See
+[`docs/SPRINT_PLAN.md`](docs/SPRINT_PLAN.md).
 
 ---
 
@@ -52,11 +53,12 @@ docs            Constitution, design system, architecture, decisions
 
 ## What is in the app today
 
-- **Foundation screen** — the ink ground, the aurora, and the trail drawing
-  itself. Honest about what this build is.
-- **The kit** — every colour, type style, glass tone, button, number, icon and
-  haptic, on the device they have to work on. Reached from the foundation
-  screen.
+- **Introduction** — three beats of one continuous drawing. Swiping does not
+  change the picture; it changes where you stand relative to it.
+- **Home** — the product's real first screen in its real first state: empty,
+  and honest about it. Carries the Auto/Light/Dark control.
+
+Both faces are designed. Neither is an inversion of the other.
 
 ## Privacy
 
@@ -68,7 +70,7 @@ the screen that explains why.
 
 ## Licences
 
-The brand typefaces — [Inter](https://github.com/rsms/inter) and
-[Space Grotesk](https://github.com/floriankarsten/space-grotesk) — are SIL Open
-Font License 1.1. They are fetched at build time rather than committed; see
+The brand typefaces — [Bricolage Grotesque](https://github.com/ateliertriay/bricolage)
+and [Plus Jakarta Sans](https://github.com/tokotype/PlusJakartaSans) — are SIL
+Open Font License 1.1. They are fetched at build time rather than committed; see
 `core/design/src/main/assets/fonts/README.md`.

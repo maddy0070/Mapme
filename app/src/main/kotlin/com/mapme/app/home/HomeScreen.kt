@@ -11,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -86,6 +87,11 @@ fun HomeScreen(
     }
 
     MapMeBackground(modifier = modifier.fillMaxSize()) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        // A short screen has to lose something, and it should be the theatre
+        // rather than the words. The mark shrinks and the headline steps down
+        // one size; the copy and the actions stay exactly as they are.
+        val compact = maxHeight < 680.dp
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -106,21 +112,21 @@ fun HomeScreen(
             Spacer(Modifier.weight(1f))
 
             MapMeMark(
-                size = 132.dp,
+                size = if (compact) 92.dp else 132.dp,
                 modifier = Modifier.scale(breath),
             )
 
-            Spacer(Modifier.height(MapMeTheme.space.x8))
+            Spacer(Modifier.height(if (compact) MapMeTheme.space.x6 else MapMeTheme.space.x8))
 
             MapMeText(
                 text = stringResource(R.string.home_empty_headline),
-                style = MapMeTheme.type.displayLarge,
+                style = if (compact) MapMeTheme.type.displayMedium else MapMeTheme.type.displayLarge,
                 color = colors.textPrimary,
             )
             Spacer(Modifier.height(MapMeTheme.space.x4))
             MapMeText(
                 text = stringResource(R.string.home_empty_body),
-                style = MapMeTheme.type.bodyLarge,
+                style = if (compact) MapMeTheme.type.bodyMedium else MapMeTheme.type.bodyLarge,
                 color = colors.textSecondary,
             )
 
@@ -153,6 +159,7 @@ fun HomeScreen(
                     )
                 }
             }
+        }
         }
     }
 }

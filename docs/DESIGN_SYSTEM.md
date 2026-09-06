@@ -10,11 +10,11 @@ Read tokens through `MapMeTheme`:
 
 ```kotlin
 MapMeTheme.colors.accent
-MapMeTheme.type.metric
+MapMeTheme.type.displayHero
 MapMeTheme.space.cardPadding
 MapMeTheme.radius.card
 MapMeTheme.depth.floating
-MapMeTheme.motion.cinematic
+MapMeTheme.motion.travel
 ```
 
 ---
@@ -25,221 +25,214 @@ MapMeTheme.motion.cinematic
 
 ### The idea
 
-MapMe is looked at in the dark, over a map, for a long time. So the ground is a
-cold ink with a slight cyan cast — the colour of the world seen from altitude at
-night — rather than the neutral grey or navy-violet most dark themes settle on.
-It recedes so the journey can come forward.
+MapMe is a journal of someone's life, so the palette is **warm before it is
+technical**. The ground is a plum-tinted charcoal at night and a rose-tinted
+paper by day — never neutral grey, never cold cyan, because a record of where
+you have been should feel closer to a photo album than an instrument panel.
 
-Four signal hues sit on it, each with exactly one job:
+Three signal hues, each with exactly one job:
 
-| Token       | Hue              | Means                                              |
-| ----------- | ---------------- | -------------------------------------------------- |
-| `accent`    | Aurora `#2BF5C0` | The hero. Primary actions, positive results, the freshest part of a trail. |
-| `focus`     | Beacon `#4D7CFF` | Selection, focus, discovery — and the far end of a trail. |
-| `live`      | Pulse `#FF2E93`  | *Now.* The live head, recording state, the dot that is you. |
-| `milestone` | Ember `#FFB627`  | Celebration. Records, firsts, streaks. Rare on purpose. |
-| `critical`  | `#FF4B4B`        | Destructive actions only. Never ordinary warnings. |
+| Token       | Night              | Paper     | Means |
+| ----------- | ------------------ | --------- | ----- |
+| `accent`    | Rose `#FF2D6F`     | `#D6004F` | **You.** The journey, primary actions, anything alive. |
+| `focus`     | Indigo `#4F6BFF`   | `#3040D6` | **The world.** Structure, focus, selection. |
+| `discovery` | Citrus `#B8F02D`   | `#5E7A00` | **Discovery.** A new place, a first, a record. Rare. |
+| `critical`  | `#FF5A4E`          | `#D62B1F` | Destructive actions only. |
 
-### The trail gradient
+### The trail
 
-`trailFar` → `trailNear` is Beacon → Aurora: a **60° hue sweep**, deliberately
-short. That is what keeps the line elegant at every zoom instead of turning into
-a rainbow. The gradient carries time, so the line tells you which way the day
-ran without a single arrowhead.
+`trailPast → trailFar → trailNear → trailHead` is a **luminance ramp through a
+single hue**, not a hue gradient. That is deliberate: a blue-to-pink gradient
+passes through purple at its midpoint, and generic purple is the one look this
+product must never have. Monochrome also means the line can never read as a
+rainbow at any zoom.
 
-`trailHead` (Pulse) is 107° away from Beacon and 167° from Aurora — far enough
-that *now* always reads, whatever part of the line it sits on. Note that it is
-separated by **hue, not luminance**: magenta and azure have nearly identical
-brightness, so a contrast-ratio check would wrongly bless an invisible design.
-`ColorContrastTest` measures hue distance for exactly this reason.
+`ColorContrastTest` enforces that the ramp is monotonic — brightening towards
+now on night, darkening towards now on paper. `trailPast` is deliberately low
+contrast: it is the faded tail of a journey, decorative rather than
+informational, and is excluded from the text thresholds.
 
-### Dark and light
+### Two modes, two designs
 
-Dark is the real face — designed first, tuned longest. Light exists so MapMe
-survives direct sunlight and is never the reference. Light reuses the same four
-hues, taken down until text on them is readable (Aurora at `#2BF5C0` is far too
-light for paper; light mode uses `#008E73`).
+Light is **not** dark inverted, and a test fails if it ever becomes so:
+
+|              | Night                              | Paper |
+| ------------ | ---------------------------------- | ----- |
+| Ground       | Plum-warm charcoal                 | Warm white with a rose whisper |
+| Cards        | Lighter surfaces carry depth       | Pure white; shadow carries depth |
+| Shadows      | Barely used, near-black            | Load-bearing, plum-tinted — a neutral shadow on warm paper reads as dirt |
+| Primary button | Hot rose fill, **ink** label     | Deep rose fill, **white** label |
+| Trail        | Light. Blooms.                     | Pigment. No bloom — a glow on white looks like a printing fault |
+| Glass        | Pale veil catching light           | Genuine white frost, much denser |
+
+The button labels differ because they have to: white on hot rose reaches only
+3.6:1. Night therefore puts ink on rose, which is also the more confident look.
 
 ### Accessibility is enforced, not asserted
 
 `ColorContrastTest` fails the build if any text token drops below **4.5:1**
-against any surface it can appear on, or any signal colour below **3:1**. It
-found three real failures when the palette was first written. Change a colour,
-re-run the test.
-
-### Map tokens
-
-`mapLand`, `mapWater`, `mapRoadMinor`, `mapRoadMajor`, `mapBuilding`,
-`mapLabel`, `mapLabelHalo` exist now so the basemap style is authored against
-the same system as the interface. The map and the chrome can never drift apart.
+against any surface it can land on, or any signal below **3:1**. It caught five
+real failures while this palette was being designed.
 
 ---
 
-## 2. Typography
+## 2. Geometry — the squircle
+
+**Source:** `MapMeShape.kt`.
+
+Android's `RoundedCornerShape` sweeps a **circular** arc, which meets the
+straight edge at an abrupt change in curvature — the eye reads it as a
+rectangle with its corners cut off. MapMe uses a **superellipse** instead:
+
+```
+|x/r|^n + |y/r|^n = 1        n = MAPME_EXPONENT = 4.2
+```
+
+At `n = 2` that is a circle, which is exactly the shape being avoided. At 4.2
+the curvature eases into the edge, which is what makes the form read as
+*squarical* rather than spherical.
+
+Corners are sampled **evenly along the arc**, not evenly in the angle. A
+superellipse races through its flat sections and crawls round its tightest
+point; uniform angle stepping left steps 3.3× longer at one end than the other,
+about half a pixel of visible flattening on a 40dp corner. Arc-length
+resampling drops that to 0.06px.
+
+**There are no pills.** The fully rounded capsule is the most common button
+shape in modern apps, which is precisely why MapMe does not use one. Every
+interactive surface — button, card, chip, icon frame, and the logo — is cut
+from this same curve.
+
+Radii: `chip` 12, `control` 18, `button` 24, `card` 30, `panel`/`sheet` 40.
+
+---
+
+## 3. The mark
+
+**Source:** `MapMeMark.kt`, and the generated vectors in `app/src/main/res`.
+
+A journey that loops almost all the way back, and a dot that has not closed it
+yet. The loop is a life's worth of movement; the dot is you, still going.
+
+- **map** is the enclosing form, **me** is the dot, **journey** is the taper.
+  No pin, no letter, no arrow — the three things every other location product
+  already owns.
+- The loop is the house superellipse, so the logo is not bolted onto the design;
+  it is the house geometry at its purest.
+- The stroke tapers using the *same function* that tapers a real journey in
+  `TrailLine`. The brand mark and the product's core visual are one object
+  drawn at different lengths.
+- The gap makes it read as unfinished on purpose — your map is still being
+  drawn — and gives the silhouette an asymmetry that survives 16px, where a
+  symmetrical ring would become an anonymous blob.
+
+The launcher icon, the splash and the in-app mark are all generated from this
+geometry rather than redrawn, so they cannot drift apart.
+
+---
+
+## 4. Typography
 
 **Source:** `MapMeType.kt`, `BrandFonts.kt`.
 
-Two typefaces, both SIL OFL 1.1:
+- **Bricolage Grotesque** — headlines. A grotesque with deliberate
+  irregularities, so a large sentence has a voice rather than merely a size.
+- **Plus Jakarta Sans** — everything read at length. Smooth, modern, friendly
+  small, content to disappear.
 
-- **Space Grotesk** — titles, the wordmark, and every number. Its slightly
-  mechanical letterforms are the personality; its figures have the weight a
-  distance deserves.
-- **Inter** — everything read at length. The most legible interface face there
-  is, and it knows to get out of the way.
+Both SIL OFL 1.1. The voice is short, warm and confident; a rigid geometric
+face fought that, which is why neither is one.
 
-Two rules hold the ramp together:
+Rules: tracking tightens as size grows (`displayHero` runs at −0.035em);
+numbers are their own class, tabular and tight; uppercase is rationed to
+`label` and `labelSmall`, for eyebrows and units only.
 
-1. **Display tracking tightens as size grows.** Large type at default tracking
-   looks typed rather than set. `heroMetric` runs at −0.03em.
-2. **Numbers are their own size class.** `heroMetric` (64sp), `metric` (28sp)
-   and `metricLabel` are tabular, tight, and heavy — meant to be *looked at*,
-   not read.
-
-`label` and `labelSmall` are the only uppercase styles. Eyebrows and units
-only — never buttons, never sentences.
-
-### The fonts are not committed
-
-`./gradlew fetchBrandFonts` pulls them into `core/design/src/main/assets/fonts/`;
-CI runs it before every build. If they are absent, `BrandFonts.resolve()` falls
-back to the platform grotesque and keeps the entire ramp — sizes, tracking,
-weights, tabular figures. `MapMeTheme.fonts.isBranded` reports which state you
-are in, and the in-app kit says so on screen. See that folder's README to bundle
-them permanently.
+The fonts are fetched at build time, not committed. If they are absent the app
+falls back to the platform grotesque and keeps the entire ramp — sizes,
+tracking, weights, tabular figures. CI now *fails* if the download did not
+happen, because on a networked runner a missing file means a bad URL.
 
 ---
 
-## 3. Space, radius
-
-**Source:** `MapMeSpacing.kt`.
-
-A 4dp grid (`x1`…`x16`) with names for the distances that carry meaning:
-`screenEdge` (20), `cardPadding` (20), `sectionGap` (32), `itemGap` (12),
-`labelGap` (6), `minTouchTarget` (48), `controlInset` (16).
-
-Use the semantic names in screens. Reach for raw steps only inside the design
-system itself.
-
-Radii are generous — the interface is glass panes over a map, and glass panes
-have polished edges. The larger the surface, the larger the radius, so nothing
-looks like a scaled-up version of something smaller: `control` 16, `card` 22,
-`panel` 28, `sheet` 36 (top corners only). **Every button is a pill.** There are
-no rectangular buttons in MapMe.
-
----
-
-## 4. Depth and glass
+## 5. Depth and glass
 
 **Source:** `MapMeDepth.kt`, `MapMeGlass.kt`, `GlassBackdrop.kt`.
 
-### Depth
+Shadows are **tinted**, never neutral black, and the tint comes from the mode.
+Depth is built per mode because the two carry it differently: night barely uses
+shadow at all (black on near-black is invisible) and leans on surface lightness
+and sheen; paper leans on shadow entirely, because every surface is already
+white and lightness has nothing left to say.
 
-Four rungs: `resting`, `raised`, `floating`, `overlay` (plus `flat`). In a dark
-interface a drop shadow does almost nothing — black on near-black is invisible —
-so depth is carried by three cues at once: the surface gets lighter as it rises,
-the top edge picks up more sheen, and the shadow spreads. Elevation is the least
-important of the three.
+A pane of glass is four things in a believable order: the world behind it
+thrown out of focus, a veil that buys back contrast, a tint catching light from
+above, and a bright hairline along the top edge.
 
-### The glass material
+**Glass is rationed** — one pane per screen, plus the occasional small control.
+It exists to say *this is floating above your journey*; a screen where
+everything is glass has said nothing.
 
-A pane is four things stacked in a believable order:
+`MapMeBackground` is a `GlassBackdropHost`, so panes genuinely refract what is
+behind them. The backdrop is re-composed once per pane: right for a procedural
+ground, wrong for a live map. When the map arrives the host should capture
+itself into a `GraphicsLayer` once per frame; the API does not change.
 
-1. the world behind it, thrown out of focus;
-2. a veil that buys back contrast;
-3. a tint that catches light from above;
-4. a bright hairline along the top edge, fading towards the corners.
-
-Three tones, chosen by how much text the pane holds, not by taste:
-`Whisper` (small controls, map still readable through them), `Standard` (the
-default pane), `Dense` (sheets and dialogs).
-
-### Real refraction
-
-`MapMeBackground` is a `GlassBackdropHost`. Panes inside it re-paint the host's
-backdrop, translated so the copy lines up exactly with the real thing, and blur
-that. Move a pane and the world behind it moves correctly.
-
-**The cost, stated plainly:** the backdrop is re-composed once per pane. That is
-the right trade for a procedural ground (MapMe's aurora is two gradients and a
-fill) and the wrong one for a live map with tiles and labels. When the map
-arrives, the host should capture itself into a `GraphicsLayer` once per frame
-and panes should draw that layer. The API does not change — only what sits
-behind `GlassBackdrop.content`.
-
-### Below Android 12
-
-`Modifier.blur` is a no-op before API 31. Rather than shipping a see-through
-pane nobody can read, the veil thickens by 0.24 and the glass becomes frostier.
-It still looks like glass; it just stops being a window.
+Below Android 12 `Modifier.blur` is a no-op, so the veil thickens and the glass
+becomes frostier rather than pretending.
 
 ---
 
-## 5. Motion
+## 6. Motion
 
 **Source:** `MapMeMotion.kt`, `MotionPreference.kt`.
 
-Durations are named after intent, because the right question at a call site is
-"is this a state flip or a journey unfolding?", not "is this 200 or 300":
+| Token       | ms   | For |
+| ----------- | ---- | --- |
+| `instant`   | 90   | A control acknowledging a finger |
+| `quick`     | 150  | Press feedback |
+| `brisk`     | 220  | State change on something already on screen |
+| `smooth`    | 320  | Arriving or leaving |
+| `flowing`   | 480  | A panel expanding, a sheet, a screen change |
+| `travel`    | 780  | A camera move across the same physical space |
+| `epic`      | 1600 | The trail drawing itself |
 
-| Token       | ms   | For                                                |
-| ----------- | ---- | -------------------------------------------------- |
-| `instant`   | 90   | A control acknowledging a finger                   |
-| `quick`     | 140  | Press feedback                                     |
-| `brisk`     | 200  | State change on something already on screen        |
-| `smooth`    | 300  | Arriving or leaving                                |
-| `flowing`   | 450  | A panel expanding, a sheet, a camera nudge         |
-| `cinematic` | 700  | The map travelling, a day becoming another day     |
-| `epic`      | 1400 | The trail drawing itself. The moment we are selling. |
+`travel` exists because onboarding's page change is not a page change — it is a
+camera pulling back from one continuous drawing, and a camera move that lands
+in 300ms reads as a cut.
 
-Easings: `standard` (the default — leaves quickly, arrives gently),
-`entering`, `exiting`, `gentle` (ambient loops), `linear` (progress and replay
-only). Springs: `snappy()`, `physical()` (the default), `settling()`.
-
-### Reduced motion is a contract
-
-When the system animator scale is 0, `LocalReduceMotion` is true and:
-**nothing disappears.** Transitions collapse to their end state, ambient loops
-are never started, and the trail is drawn complete instead of drawing itself.
-Same information, no theatre. Wrap durations in `motionDuration(...)`.
-
----
-
-## 6. Haptics
-
-**Source:** `MapMeHaptics.kt`. Five feelings, each with a meaning: `select()`,
-`confirm()`, `tick()`, `milestone()`, `warn()`.
-
-`milestone()` is the only shaped waveform — a two-beat crescendo — because it is
-the only haptic MapMe is allowed to make memorable. Everything else is a system
-constant. A phone that buzzes at everything gets silenced, and then the
-milestone is lost with it.
+**Reduced motion is a contract.** When the system animator scale is 0, nothing
+disappears: transitions resolve to their end state, ambient loops are never
+started, and the trail is drawn complete instead of drawing itself. Same
+information, no theatre. Wrap durations in `motionDuration(...)`.
 
 ---
 
 ## 7. Icons
 
-**Source:** `MapMeIcons.kt`. MapMe draws its own, not because the standard set
-is bad but because an icon set is a handwriting: **24dp grid, 2dp stroke, round
-caps, round joins, no detail smaller than the stroke.** Mixing two handwritings
-is the fastest way to make a product look assembled.
+**Source:** `MapMeIcons.kt`. A 24dp grid, a 2dp stroke never varied, round caps
+and joins, curves that ease into their straights. No gloss, no gradients, no
+3D, and never a second icon family.
 
-Current set: `Pin`, `Trail`, `Calendar`, `Play`, `Layers`, `Sparkle`,
-`ChevronRight`. Add one when a screen genuinely needs it, drawn to these rules.
+The set is **three icons** — `ArrowRight`, `Replay`, `Sparkle` — because three
+is what the current screens need. An icon gets drawn when a screen genuinely
+cannot speak without it; a set that grows ahead of its screens is how a product
+ends up with four visual dialects.
 
 ---
 
 ## 8. Components
 
-| Component                        | Notes                                              |
-| -------------------------------- | -------------------------------------------------- |
-| `MapMeText`                      | Colour resolves: argument → style → surrounding `LocalMapMeContentColor` → `textPrimary`. |
-| `MapMeButton`                    | Primary / Secondary / Ghost, Large / Medium. Compresses and springs back with a haptic. **No ripples** — a ripple is ink spreading through paper, the wrong metaphor for glass. |
-| `GlassSurface` / `GlassCard`     | The pane. `GlassCard` adds standard interior padding. |
-| `MapMeBackground`                | Ink ground with two drifting aurora fields; also the backdrop host. |
-| `TrailLine`                      | The journey. Catmull-Rom smoothed, time-coloured, glowing, revealable. |
-| `MapMeMark` / `MapMeWordmark`    | The brand. An M drawn as a journey by the same spline. |
-| `Metric`                         | A statistic as something to feel. Reads to screen readers as one sentence. |
-| `MapMePill` / `LiveDot`          | State, worn on the interface. Pills say what *is*, never what to do. |
+| Component                     | Notes |
+| ----------------------------- | ----- |
+| `MapMeText`                   | Colour resolves: argument → style → surrounding content colour → `textPrimary`. |
+| `MapMeButton`                 | Primary / Secondary / Ghost. Squircle, never a pill. Compresses and springs back with a haptic — **no ripple**, which is ink spreading through paper, the wrong physics for glass. |
+| `GlassSurface` / `GlassCard`  | The pane. Two genuinely different materials per mode. |
+| `MapMeBackground`             | Ground plus drifting atmosphere; also the backdrop host. |
+| `TrailLine`                   | The journey. Tapered, smoothed, revealable, mode-aware. |
+| `JourneyThread`               | Deterministic generative **artwork** for onboarding. Not data — see below. |
+| `MapMeMark` / `MapMeWordmark` | The brand. |
+| `Metric`                      | A statistic as something to feel. Reads to screen readers as one sentence. |
+| `MapMePill` / `LiveDot`       | State, worn on the interface. Pills say what *is*, never what to do. |
 
 ### There is no Material
 
@@ -250,8 +243,13 @@ primitives; the benefit is that nothing can quietly drift back to default.
 
 ---
 
-## 9. Seeing it
+## 9. Honesty about the artwork
 
-The design system gallery ships inside the app — `FoundationScreen` → *"See
-what it's made of"*. Previews lie about colour, glass, motion and haptics; a
-phone in real light does not. A design system nobody can look at drifts.
+The line in onboarding is generated from a fixed seed by `JourneyThread`. It is
+**not** a recording, not sample data, and not a stand-in for one. It is a
+deterministic drawing — identical on every launch and every device, the way a
+logo is — and no screen presents it as a journey anyone took. Home shows an
+empty state rather than invented statistics for the same reason.
+
+When real journeys arrive they render through `TrailLine` exactly as this does.
+That is the point: the introduction is a promise the product can keep.

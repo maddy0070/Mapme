@@ -1,6 +1,52 @@
 # Sprint plan
 
-## Sprint 0 — Foundation (this one)
+## Sprint 1 — Visual identity and onboarding (this one)
+
+**Goal:** replace the rejected Sprint 0 look with a visual DNA every future
+MapMe screen can follow. No product functionality.
+
+### Delivered
+
+- **Colour rebuilt from first principles.** Plum-warm charcoal at night, rose
+  paper by day. Rose is you, Indigo is the world, Citrus is discovery. The
+  trail is a luminance ramp through one hue, so it can never read as a rainbow
+  or pass through purple.
+- **Light mode designed, not inverted** — different accent, different button
+  treatment, different depth scale, a trail that stops glowing. A test fails if
+  the two modes ever collapse into each other.
+- **A new mark**: a journey that loops almost all the way back with a dot that
+  has not closed it. Generated geometry shared by the launcher icon, the splash
+  and the in-app mark.
+- **True superellipse corners** everywhere, sampled evenly along the arc. No
+  pills anywhere in the product.
+- **Bricolage Grotesque + Plus Jakarta Sans**, chosen to match the voice.
+- **Onboarding**: three beats of one continuous drawing, with the camera driven
+  by the pager's fractional offset and zoom interpolated in log space.
+- **Home**: the real first screen in its real first state — empty, and honest.
+- Appearance control (Auto/Light/Dark) persisted across launches.
+- Tests for the squircle maths and the artwork's determinism.
+
+### Explicitly not delivered
+
+No GPS, no recording, no map, no storage, no history, no replay. All out of
+scope by instruction, and asking for location before there is a journey to
+record would break §16 anyway.
+
+### Known gaps carried forward
+
+1. **Nothing has been seen on a phone yet.** CI proves the code is well-formed;
+   it says nothing about whether MapMe *looks* like MapMe.
+2. **Backdrop blur still re-composes per pane.** Fine over the procedural
+   ground, must become a captured `GraphicsLayer` before it sits over a map.
+3. **The design system gallery is gone** with the old foundation screen. There
+   is currently no in-app way to view every token at once; if that turns out to
+   be missed during QA it should come back as a debug-only screen, not a
+   product one.
+4. **Three icons only.** Deliberate, but the set will need to grow carefully.
+
+---
+
+## Sprint 0 — Foundation
 
 **Goal:** establish the project and the visual system MapMe will be built in,
 without building any product feature.

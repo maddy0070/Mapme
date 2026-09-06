@@ -35,6 +35,28 @@ jobs:
         timeout-minutes: 15
         run: ./gradlew fetchBrandFonts
 
+      # The fetch task swallows network errors on purpose so an offline
+      # developer still gets a working build on the fallback typeface. That is
+      # the right behaviour locally and the wrong one here: on a runner that
+      # can reach Google Fonts, a missing file means a bad URL, and without
+      # this check the APK would ship looking like a different product with
+      # nothing in the log to say why.
+      - name: Verify the brand typefaces actually landed
+        run: |
+          dir=core/design/src/main/assets/fonts
+          for f in BricolageGrotesque.ttf PlusJakartaSans.ttf; do
+            if [ ! -s "$dir/$f" ]; then
+              echo "::error::$f is missing — the app would fall back to the platform typeface."
+              exit 1
+            fi
+            size=$(wc -c < "$dir/$f")
+            if [ "$size" -lt 20000 ]; then
+              echo "::error::$dir/$f is only $size bytes; that is not a font."
+              exit 1
+            fi
+            echo "$f: $size bytes"
+          done
+
       - name: Unit tests
         run: ./gradlew test
 
