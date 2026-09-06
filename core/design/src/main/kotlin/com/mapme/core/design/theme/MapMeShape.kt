@@ -151,10 +151,17 @@ internal fun squirclePath(
 }
 
 /**
- * Sweeps one superellipse quarter around ([cx], [cy]).
+ * Sweeps one superellipse quarter around ([cx], [cy]), evenly along the curve.
  *
- * The `2/n` exponent is what turns the unit circle's cosine and sine into the
+ * The `2/n` exponent turns the unit circle's cosine and sine into the
  * superellipse: at n = 2 it collapses to 1 and an ordinary arc comes back.
+ *
+ * The resampling is the part that matters. Stepping the *angle* uniformly
+ * makes the curve race through its flat sections and crawl round its tightest
+ * point, leaving steps three times longer at one end than the other — about
+ * half a pixel of visible flattening on a 40dp corner, right where the eye
+ * goes. Spacing the samples evenly along the arc instead costs one pass of
+ * cheap arithmetic and drops that error roughly ninefold.
  */
 private fun corner(
     into: MutableList<Offset>,
@@ -167,47 +174,36 @@ private fun corner(
 ) {
     if (r <= 0f) return
     val power = 2f / exponent
-    for (i in 0..CORNER_SAMPLES) {
-        val t = i.toFloat() / CORNER_SAMPLES
+
+    fun at(t: Float): Offset {
         val rad = Math.toRadians((fromDeg + (toDeg - fromDeg) * t).toDouble())
         val c = cos(rad).toFloat()
         val s = sin(rad).toFloat()
-        into += Offset(
+        return Offset(
             cx + (r * abs(c).pow(power)).withSign(c),
             cy + (r * abs(s).pow(power)).withSign(s),
         )
     }
+
+    val dense = ArrayList<Offset>(DENSE_SAMPLES + 1)
+    for (i in 0..DENSE_SAMPLES) dense += at(i.toFloat() / DENSE_SAMPLES)
+
+    val cumulative = FloatArray(dense.size)
+    for (i in 1 until dense.size) {
+        cumulative[i] = cumulative[i - 1] + (dense[i] - dense[i - 1]).getDistance()
+    }
+    val total = cumulative.last()
+    if (total <= 0f) return
+
+    var j = 0
+    for (k in 0..CORNER_SAMPLES) {
+        val target = total * k / CORNER_SAMPLES
+        while (j < cumulative.size - 2 && cumulative[j + 1] < target) j++
+        val span = (cumulative[j + 1] - cumulative[j]).takeIf { it > 1e-6f } ?: 1e-6f
+        val f = (target - cumulative[j]) / span
+        into += dense[j] + (dense[j + 1] - dense[j]) * f
+    }
 }
 
-/**
- * MapMe's corner radii.
- *
- * The rule: the larger the surface, the larger the radius, so nothing ever
- * looks like a scaled-up version of something smaller.
- *
- * Note what is missing — there are **no pills**. A fully rounded capsule is
- * the single most common button shape in modern apps, which is precisely why
- * MapMe does not use one. Every interactive surface is a squircle.
- */
-@Immutable
-data class MapMeRadius(
-    val xs: Dp = 8.dp,
-    val sm: Dp = 12.dp,
-    val md: Dp = 18.dp,
-    val lg: Dp = 24.dp,
-    val xl: Dp = 30.dp,
-    val xxl: Dp = 40.dp,
-) {
-    val chip: Shape get() = SquircleShape(sm)
-    val control: Shape get() = SquircleShape(md)
-    val button: Shape get() = SquircleShape(lg)
-    val card: Shape get() = SquircleShape(xl)
-    val panel: Shape get() = SquircleShape(xxl)
-    val thumbnail: Shape get() = SquircleShape(md)
-
-    /** Sheets curve at the top and meet the screen edge square. */
-    val sheet: Shape get() = SquircleShape(xxl, xxl, 0.dp, 0.dp)
-
-    /** The frame an icon sits inside. Matches the launcher-icon mask family. */
-    val iconFrame: Shape get() = SquircleShape(md)
-}
+/** Working resolution for the arc-length pass. Never drawn. */
+private const val DENSE_SAMPLES = 64

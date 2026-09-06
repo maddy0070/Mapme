@@ -79,16 +79,25 @@ class SquircleShapeTest {
     }
 
     @Test
-    fun `the outline has no facets an eye could catch`() {
-        // Sixteen samples per corner should keep every step small relative to
-        // the corner it is describing. Long straight hops here would show as
-        // flat spots on a 40dp button corner.
-        val points = outline(Size(300f, 200f), radius = 40f)
-        val corners = points.zipWithNext()
+    fun `corner samples are spaced evenly along the curve`() {
+        // Uniform steps in the angle parameter leave the corner three times
+        // coarser at one end than the other — about half a pixel of visible
+        // flattening on a 40dp corner. Even arc-length spacing is what keeps
+        // the curve clean, so it is worth asserting rather than trusting.
+        val radius = 40f
+        val points = outline(Size(300f, 200f), radius)
+        val steps = points.zipWithNext()
             .map { (a, b) -> hypot(b.x - a.x, b.y - a.y) }
-            .filter { it < 40f } // ignore the four straight edges
-        assertTrue("no corner samples found", corners.isNotEmpty())
-        assertTrue("corner step of ${corners.max()} is too coarse", corners.max() < 8f)
+            .filter { it < radius } // the four straight edges are much longer
+        assertTrue("no corner samples found", steps.size > 40)
+
+        val longest = steps.max()
+        val mean = steps.average().toFloat()
+        assertTrue(
+            "corner sampling is uneven: longest $longest vs mean $mean",
+            longest < mean * 1.15f,
+        )
+        assertTrue("corner step of $longest is too coarse for r=$radius", longest < radius * 0.15f)
     }
 
     @Test
