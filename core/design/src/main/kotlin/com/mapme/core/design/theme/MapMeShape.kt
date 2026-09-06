@@ -1,6 +1,7 @@
 package com.mapme.core.design.theme
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
@@ -51,8 +52,7 @@ class SquircleShape(
         layoutDirection: LayoutDirection,
         density: Density,
     ): Outline {
-        val limit = minOf(size.width, size.height) / 2f
-        fun px(dp: Dp) = with(density) { dp.toPx() }.coerceIn(0f, limit)
+        fun px(dp: Dp) = with(density) { dp.toPx() }
         return Outline.Generic(
             squirclePath(
                 size = size,
@@ -87,6 +87,52 @@ const val MAPME_EXPONENT: Float = 4.2f
 /** Samples per corner. Sixteen is past the point where an eye can see facets. */
 private const val CORNER_SAMPLES = 16
 
+/**
+ * Clamps a corner radius so a small surface cannot fold itself inside out.
+ *
+ * Pulled out as its own function so it can be tested without building a Path —
+ * see the note on [squircleOutline].
+ */
+internal fun clampRadius(radius: Float, size: Size): Float =
+    radius.coerceIn(0f, minOf(size.width, size.height) / 2f)
+
+/**
+ * The squircle as a list of points, with no Android types involved.
+ *
+ * The geometry lives here rather than inside [squirclePath] for one practical
+ * reason: `Path` wraps `android.graphics.Path`, which does not exist in a JVM
+ * unit test, so any shape maths expressed directly as a Path is untestable
+ * anywhere except on a device. Keeping the maths pure means the corner can be
+ * proven correct on every build instead of eyeballed once.
+ */
+internal fun squircleOutline(
+    size: Size,
+    topStart: Float,
+    topEnd: Float,
+    bottomEnd: Float,
+    bottomStart: Float,
+    exponent: Float,
+): List<Offset> {
+    val w = size.width
+    val h = size.height
+    val tl = clampRadius(topStart, size)
+    val tr = clampRadius(topEnd, size)
+    val br = clampRadius(bottomEnd, size)
+    val bl = clampRadius(bottomStart, size)
+
+    val points = ArrayList<Offset>(CORNER_SAMPLES * 4 + 8)
+    points += Offset(tl, 0f)
+    points += Offset(w - tr, 0f)
+    corner(points, w - tr, tr, tr, 270f, 360f, exponent)
+    points += Offset(w, h - br)
+    corner(points, w - br, h - br, br, 0f, 90f, exponent)
+    points += Offset(bl, h)
+    corner(points, bl, h - bl, bl, 90f, 180f, exponent)
+    points += Offset(0f, tl)
+    corner(points, tl, tl, tl, 180f, 270f, exponent)
+    return points
+}
+
 internal fun squirclePath(
     size: Size,
     topStart: Float,
@@ -95,30 +141,23 @@ internal fun squirclePath(
     bottomStart: Float,
     exponent: Float,
 ): Path {
-    val w = size.width
-    val h = size.height
-    val p = Path()
-
-    p.moveTo(topStart, 0f)
-    p.lineTo(w - topEnd, 0f)
-    p.corner(w - topEnd, topEnd, topEnd, 270f, 360f, exponent)
-    p.lineTo(w, h - bottomEnd)
-    p.corner(w - bottomEnd, h - bottomEnd, bottomEnd, 0f, 90f, exponent)
-    p.lineTo(bottomStart, h)
-    p.corner(bottomStart, h - bottomStart, bottomStart, 90f, 180f, exponent)
-    p.lineTo(0f, topStart)
-    p.corner(topStart, topStart, topStart, 180f, 270f, exponent)
-    p.close()
-    return p
+    val outline = squircleOutline(size, topStart, topEnd, bottomEnd, bottomStart, exponent)
+    val path = Path()
+    if (outline.isEmpty()) return path
+    path.moveTo(outline[0].x, outline[0].y)
+    for (i in 1 until outline.size) path.lineTo(outline[i].x, outline[i].y)
+    path.close()
+    return path
 }
 
 /**
  * Sweeps one superellipse quarter around ([cx], [cy]).
  *
- * The `2/n` exponent is what turns the unit circle's cosine/sine into the
- * superellipse: at n = 2 it collapses to 1 and you get an ordinary arc back.
+ * The `2/n` exponent is what turns the unit circle's cosine and sine into the
+ * superellipse: at n = 2 it collapses to 1 and an ordinary arc comes back.
  */
-private fun Path.corner(
+private fun corner(
+    into: MutableList<Offset>,
     cx: Float,
     cy: Float,
     r: Float,
@@ -133,7 +172,7 @@ private fun Path.corner(
         val rad = Math.toRadians((fromDeg + (toDeg - fromDeg) * t).toDouble())
         val c = cos(rad).toFloat()
         val s = sin(rad).toFloat()
-        lineTo(
+        into += Offset(
             cx + (r * abs(c).pow(power)).withSign(c),
             cy + (r * abs(s).pow(power)).withSign(s),
         )
