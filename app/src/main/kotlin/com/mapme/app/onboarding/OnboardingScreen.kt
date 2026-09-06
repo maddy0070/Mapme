@@ -160,6 +160,7 @@ fun OnboardingScreen(
     val motion = MapMeTheme.motion
     val reduceMotion = LocalReduceMotion.current
     val drawDuration = motionDuration(motion.epic)
+    val depthDuration = motionDuration(motion.travel)
 
     val backdrops = remember { BACKDROPS.map { it to JourneyThread.generate(it.count, it.seed) } }
 
@@ -167,7 +168,7 @@ fun OnboardingScreen(
     // first thing you see is a place rather than a stroke on nothing.
     val depth = remember { Animatable(if (reduceMotion) 1f else 0f) }
     LaunchedEffect(Unit) {
-        if (!reduceMotion) depth.animateTo(1f, tween(motionDuration(motion.travel), easing = motion.gentle))
+        if (!reduceMotion) depth.animateTo(1f, tween(depthDuration, easing = motion.gentle))
     }
 
     // A very slow wander, a few thousandths of the canvas wide. Individually
