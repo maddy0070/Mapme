@@ -5,86 +5,87 @@ import androidx.compose.ui.graphics.Color
 /**
  * The raw MapMe palette.
  *
- * These are pigments, not roles. Nothing in the app should reference them
- * directly — use [MapMeColors] (`MapMeTheme.colors`) so every colour arrives
- * with a meaning attached.
+ * Pigments, not roles. Nothing outside [MapMeColors] should reference these —
+ * every colour reaches a screen with a meaning already attached.
  *
  * ## Why these hues
  *
- * MapMe is looked at in the dark, over a map, for a long time. The ground is
- * therefore a cold ink with a slight cyan cast — the colour of the world seen
- * from altitude at night — rather than the neutral grey or navy-violet that
- * most dark themes settle on. It recedes, so the journey can come forward.
+ * MapMe is a journal of someone's life, so the palette is **warm before it is
+ * technical**. The ground is a plum-tinted charcoal at night and a rose-tinted
+ * paper by day — never a neutral grey, never a cold cyan-black, because a
+ * record of where you have been should feel closer to a photo album than to an
+ * instrument panel.
  *
- * Against that ground sit four signal hues, each with one job:
+ * Three signal hues, each with exactly one job:
  *
- * - **Aurora** (electric mint) is the freshest part of your trail, and the
- *   colour of anything positive. It is the hero.
- * - **Beacon** (electric azure) is the far end of the trail — older movement —
- *   and everything to do with selection, focus and discovery.
- * - **Pulse** (hot magenta) is *now*: the live head of the trail, recording
- *   state, the beating dot that is you.
- * - **Ember** (gold) is celebration — milestones, records, streaks — and
- *   nothing else. Used rarely so it keeps its meaning.
+ * - **Rose** is *you*. The journey line, the primary action, anything alive.
+ *   It is the hero, and it is warm on purpose — this is the "Me" in MapMe.
+ * - **Indigo** is *the world*. Structure, focus, selection, the map beneath.
+ *   Cool, confident, and deliberately quieter than Rose.
+ * - **Citrus** is *discovery*. A new place, a personal record, a first. It is
+ *   used rarely enough that seeing it means something.
  *
- * Beacon → Aurora is a short, adjacent hue sweep, which is what lets the trail
- * stay elegant at every zoom instead of turning into a rainbow. Pulse is the
- * only hue far away from it, which is exactly why the live head always reads.
+ * The trail ramp travels through Rose alone — deep to hot to white-hot. A
+ * hue-based gradient from blue to pink passes through purple at its midpoint,
+ * which is exactly the look this product must not have.
  */
 internal object MapMePalette {
 
-    // --- Ink: the ground -----------------------------------------------------
-    val Ink00 = Color(0xFF05080B)
-    val Ink05 = Color(0xFF080D12)
-    val Ink10 = Color(0xFF0C131A)
-    val Ink15 = Color(0xFF101922)
-    val Ink20 = Color(0xFF15212C)
-    val Ink30 = Color(0xFF1C2C39)
-    val Ink40 = Color(0xFF263B4B)
-    val Ink50 = Color(0xFF33505F)
+    // --- Night: the dark ground. Charcoal with a plum warmth. ---------------
+    val Night00 = Color(0xFF0E0B12)
+    val Night05 = Color(0xFF141019)
+    val Night10 = Color(0xFF1A1621)
+    val Night20 = Color(0xFF241F2C)
+    val Night30 = Color(0xFF302938)
+    val Night40 = Color(0xFF3E3547)
 
-    // --- Frost: light ground, and text on ink --------------------------------
-    val Frost00 = Color(0xFFFFFFFF)
-    val Frost02 = Color(0xFFECF3F6)
-    val Frost05 = Color(0xFFE2EBF0)
-    val Frost10 = Color(0xFFD3E0E7)
-    val Frost20 = Color(0xFFB9CBD5)
-    val Frost30 = Color(0xFF9FB4BF)
-    val Frost40 = Color(0xFF8FA6B1)
-    // Frost50 is the floor for text on ink: it is the lightest step that still
-    // clears 4.5:1 against every dark surface, overlay included. Do not darken
-    // it without re-running ColorContrastTest.
-    val Frost50 = Color(0xFF7C949F)
-    val Frost60 = Color(0xFF5A727D)
+    // --- Paper: the light ground. Warm white, faint rose undertone. ---------
+    val Paper00 = Color(0xFFFFFFFF)
+    val Paper05 = Color(0xFFFDFAFB)
+    val Paper10 = Color(0xFFF7F2F5)
+    val Paper20 = Color(0xFFEDE6EB)
+    val Paper30 = Color(0xFFDDD3DA)
 
-    // --- Aurora: the trail, alive --------------------------------------------
-    val Aurora20 = Color(0xFF052B26)
-    val Aurora40 = Color(0xFF0C7D6B)
-    val Aurora60 = Color(0xFF14C4A6)
-    val Aurora = Color(0xFF2BF5C0)
-    val Aurora80 = Color(0xFF7DFFDC)
+    // --- Rose: you, and your journey ----------------------------------------
+    val Rose10 = Color(0xFF2A0A16)
+    val Rose30 = Color(0xFF7A0E33)
+    val Rose40 = Color(0xFF8C0036)
+    val Rose50 = Color(0xFFB10040)
+    val Rose60 = Color(0xFFD6004F)
+    val Rose70 = Color(0xFFE8145C)
+    val Rose = Color(0xFFFF2D6F)
+    val Rose80 = Color(0xFFFF6B98)
+    val Rose90 = Color(0xFFFFC2D6)
+    val Rose95 = Color(0xFFFFF0F5)
 
-    // --- Beacon: focus, selection, distance ----------------------------------
-    val Beacon20 = Color(0xFF0A1A45)
-    val Beacon40 = Color(0xFF2B4BC7)
-    val Beacon = Color(0xFF4D7CFF)
-    val Beacon80 = Color(0xFF9DB8FF)
+    // --- Indigo: the world ---------------------------------------------------
+    val Indigo10 = Color(0xFF0C1030)
+    val Indigo30 = Color(0xFF1E2A7A)
+    val Indigo50 = Color(0xFF3040D6)
+    val Indigo60 = Color(0xFF3B4FD8)
+    val Indigo = Color(0xFF4F6BFF)
+    val Indigo80 = Color(0xFF9DAEFF)
+    val Indigo95 = Color(0xFFDEE5FF)
 
-    // --- Pulse: now ----------------------------------------------------------
-    val Pulse20 = Color(0xFF3D0A24)
-    val Pulse40 = Color(0xFFB01C63)
-    val Pulse = Color(0xFFFF2E93)
-    val Pulse80 = Color(0xFFFF8FC4)
+    // --- Citrus: discovery ---------------------------------------------------
+    val Citrus30 = Color(0xFF3A4D00)
+    val Citrus50 = Color(0xFF5E7A00)
+    val Citrus70 = Color(0xFF8FB80A)
+    val Citrus = Color(0xFFB8F02D)
+    val Citrus80 = Color(0xFFD6F97E)
 
-    // --- Ember: celebration --------------------------------------------------
-    val Ember20 = Color(0xFF3A2703)
-    val Ember40 = Color(0xFF9A6205)
-    val Ember = Color(0xFFFFB627)
-    val Ember80 = Color(0xFFFFD98A)
+    // --- Text ----------------------------------------------------------------
+    // Floors verified by ColorContrastTest against every surface each one can
+    // land on. Do not darken (light) or lighten (dark) without re-running it.
+    val OnNight00 = Color(0xFFF6F1F5)
+    val OnNight10 = Color(0xFFB5AABF)
+    val OnNight20 = Color(0xFF8F849B)
+
+    val OnPaper00 = Color(0xFF1A1421)
+    val OnPaper10 = Color(0xFF5A5065)
+    val OnPaper20 = Color(0xFF6E6479)
 
     // --- Critical: destructive only ------------------------------------------
-    val Critical20 = Color(0xFF3D0D0D)
-    val Critical40 = Color(0xFF8E1F18)
-    val Critical = Color(0xFFFF4B4B)
-    val Critical80 = Color(0xFFFF9A96)
+    val CriticalDark = Color(0xFFFF5A4E)
+    val CriticalLight = Color(0xFFD62B1F)
 }

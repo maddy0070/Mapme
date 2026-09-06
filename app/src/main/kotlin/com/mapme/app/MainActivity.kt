@@ -12,16 +12,18 @@ import com.mapme.core.design.theme.MapMeTheme
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Before super.onCreate, so the ink window and the mark are the first
-        // things drawn. MapMe should never flash white on the way in.
+        // Before super.onCreate, so the brand mark is the first thing drawn.
+        // MapMe should never flash a blank window on the way in.
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
-        // The map will eventually run under the status bar, so the interface
-        // is edge to edge from the first commit rather than being retrofitted.
+        // The map will eventually run under the status bar, so the interface is
+        // edge to edge from the start rather than being retrofitted. Both bars
+        // are transparent in both modes; MapMeTheme sets the icon appearance to
+        // match whichever face is on.
         enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
         )
 
         setContent {

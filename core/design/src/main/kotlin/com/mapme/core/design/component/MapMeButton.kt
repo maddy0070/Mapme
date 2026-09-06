@@ -32,39 +32,26 @@ import com.mapme.core.design.theme.LocalMapMeContentColor
 import com.mapme.core.design.theme.MapMeTheme
 
 /**
- * How loud a button is.
- *
- * There is exactly one [Primary] button on a screen. If a screen seems to need
- * two, one of them is really a [Secondary].
+ * How loud a button is. There is exactly one [Primary] per screen; if a screen
+ * seems to need two, one of them is really a [Secondary].
  */
-enum class MapMeButtonStyle {
-    /** The one thing this screen wants you to do. Accent fill. */
-    Primary,
+enum class MapMeButtonStyle { Primary, Secondary, Ghost }
 
-    /** A real alternative. Glass, with an edge. */
-    Secondary,
-
-    /** Available, but quiet. No container at all. */
-    Ghost,
-}
-
-enum class MapMeButtonSize {
-    /** Full-width commitments: start recording, grant permission. */
-    Large,
-
-    /** Everything else. */
-    Medium,
-}
+enum class MapMeButtonSize { Large, Medium }
 
 /**
  * A MapMe button.
  *
- * MapMe buttons do not ripple. A ripple is a splash of ink spreading through
- * paper — the wrong metaphor for glass. Instead the button *compresses* under
- * a finger and springs back, which is what a physical control does, and it is
- * paired with a haptic so the feedback lands in two senses at once.
+ * **It is a squircle, not a pill.** The fully rounded capsule is the single
+ * most common button shape in modern apps, which is exactly why MapMe does not
+ * use one. The corner here is the same superellipse as every card and the logo
+ * itself, so a button looks like it was cut from the same material as
+ * everything around it.
  *
- * Every button is a pill. There are no rectangular buttons in MapMe.
+ * **It does not ripple.** A ripple is ink spreading through paper — the wrong
+ * physics for a pane of glass. Instead the button compresses under a finger
+ * and springs back, paired with a haptic, so the feedback lands in two senses
+ * at once.
  */
 @Composable
 fun MapMeButton(
@@ -74,7 +61,7 @@ fun MapMeButton(
     style: MapMeButtonStyle = MapMeButtonStyle.Primary,
     size: MapMeButtonSize = MapMeButtonSize.Medium,
     enabled: Boolean = true,
-    leading: (@Composable RowScope.() -> Unit)? = null,
+    trailing: (@Composable RowScope.() -> Unit)? = null,
 ) {
     val colors = MapMeTheme.colors
     val motion = MapMeTheme.motion
@@ -83,22 +70,22 @@ fun MapMeButton(
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (pressed && enabled) 0.965f else 1f,
+        targetValue = if (pressed && enabled) 0.962f else 1f,
         animationSpec = motion.snappy(),
         label = "MapMeButtonPress",
     )
 
     val height: Dp = when (size) {
-        MapMeButtonSize.Large -> 56.dp
-        MapMeButtonSize.Medium -> 48.dp
+        MapMeButtonSize.Large -> 58.dp
+        MapMeButtonSize.Medium -> 50.dp
     }
-    val horizontalPadding: Dp = when (size) {
-        MapMeButtonSize.Large -> 28.dp
-        MapMeButtonSize.Medium -> 22.dp
+    val horizontal: Dp = when (size) {
+        MapMeButtonSize.Large -> 30.dp
+        MapMeButtonSize.Medium -> 24.dp
     }
 
     val contentColor = when (style) {
-        MapMeButtonStyle.Primary -> colors.textOnAccent
+        MapMeButtonStyle.Primary -> colors.onAccent
         MapMeButtonStyle.Secondary -> colors.textPrimary
         MapMeButtonStyle.Ghost -> colors.accent
     }
@@ -107,7 +94,6 @@ fun MapMeButton(
 
     var container = Modifier
         .height(height)
-        // Never smaller than a comfortable target, whatever the label says.
         .defaultMinSize(minWidth = MapMeTheme.space.minTouchTarget)
         .scale(scale)
 
@@ -121,13 +107,9 @@ fun MapMeButton(
                 spotColor = MapMeTheme.depth.raised.spot,
             )
             .clip(shape)
-            // A flat fill reads as a sticker; the gradient gives the pill a
+            // A flat fill reads as a sticker; the gradient gives the surface a
             // top-lit curvature that matches the glass around it.
-            .background(
-                Brush.verticalGradient(
-                    listOf(colors.accent, colors.accentMuted),
-                ),
-            )
+            .background(Brush.verticalGradient(listOf(colors.accent, colors.accentDeep)))
 
         MapMeButtonStyle.Secondary -> container
             .clip(shape)
@@ -155,20 +137,20 @@ fun MapMeButton(
             }
             .padding(
                 PaddingValues(
-                    horizontal = if (style == MapMeButtonStyle.Ghost) 12.dp else horizontalPadding,
+                    horizontal = if (style == MapMeButtonStyle.Ghost) 14.dp else horizontal,
                 ),
             ),
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+        horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CompositionLocalProvider(LocalMapMeContentColor provides contentColor) {
-            leading?.invoke(this@Row)
             MapMeText(
                 text = text,
                 style = MapMeTheme.type.button,
                 color = contentColor,
                 maxLines = 1,
             )
+            trailing?.invoke(this@Row)
         }
     }
 }

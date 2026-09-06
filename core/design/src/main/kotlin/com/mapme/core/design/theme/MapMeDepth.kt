@@ -9,11 +9,10 @@ import androidx.compose.ui.unit.dp
 /**
  * One rung of the depth ladder.
  *
- * In a dark interface a drop shadow does almost nothing — black on near-black
- * is invisible. So MapMe carries depth with three cues at once: the surface
- * gets *lighter* as it rises, the top edge picks up more sheen, and the shadow
- * spreads. [elevation] is the least important of the three; it is there to
- * catch the light in light mode and to soften the boundary in dark mode.
+ * MapMe tints its shadows. A neutral black shadow on warm paper reads as dirt;
+ * a plum-tinted one reads as light falling through something warm. The tint
+ * comes from [MapMeColors.shadowTint], so depth is a property of the mode, not
+ * a constant.
  */
 @Immutable
 data class DepthLevel(
@@ -25,55 +24,69 @@ data class DepthLevel(
 /**
  * Four rungs, and no more. If something needs to sit between two of them, the
  * hierarchy is wrong, not the scale.
+ *
+ * The two modes carry depth differently, which is why this is built per mode
+ * rather than shared:
+ *
+ * - **Night** barely uses shadow at all — black on near-black is invisible.
+ *   Depth comes from the surface getting lighter as it rises and the top edge
+ *   picking up more sheen.
+ * - **Paper** leans on shadow entirely, because every surface is already white
+ *   and lightness has nothing left to say. So the elevations are larger and
+ *   the tint does real work.
  */
 @Immutable
 data class MapMeDepth(
-    /** Flush with the canvas. Lists, backgrounds, the map itself. */
-    val flat: DepthLevel = DepthLevel(0.dp, Color.Transparent, Color.Transparent),
-    /** A card resting on the canvas. */
-    val resting: DepthLevel = DepthLevel(
-        elevation = 2.dp,
-        ambient = Color.Black.copy(alpha = 0.34f),
-        spot = Color.Black.copy(alpha = 0.44f),
-    ),
-    /** A card lifted for attention, or a pressed-then-released control. */
-    val raised: DepthLevel = DepthLevel(
-        elevation = 8.dp,
-        ambient = Color.Black.copy(alpha = 0.40f),
-        spot = Color.Black.copy(alpha = 0.52f),
-    ),
-    /** Glass floating over the map: controls, journey cards, the live panel. */
-    val floating: DepthLevel = DepthLevel(
-        elevation = 18.dp,
-        ambient = Color.Black.copy(alpha = 0.46f),
-        spot = Color.Black.copy(alpha = 0.60f),
-    ),
-    /** Sheets, dialogs, anything that takes over. */
-    val overlay: DepthLevel = DepthLevel(
-        elevation = 30.dp,
-        ambient = Color.Black.copy(alpha = 0.54f),
-        spot = Color.Black.copy(alpha = 0.70f),
-    ),
+    val flat: DepthLevel,
+    val resting: DepthLevel,
+    val raised: DepthLevel,
+    val floating: DepthLevel,
+    val overlay: DepthLevel,
 )
+
+fun mapMeDepth(colors: MapMeColors): MapMeDepth {
+    val tint = colors.shadowTint
+    fun level(elevation: Dp, ambient: Float, spot: Float) = DepthLevel(
+        elevation = elevation,
+        ambient = tint.copy(alpha = ambient),
+        spot = tint.copy(alpha = spot),
+    )
+
+    return if (colors.isDark) {
+        MapMeDepth(
+            flat = DepthLevel(0.dp, Color.Transparent, Color.Transparent),
+            resting = level(2.dp, 0.36f, 0.46f),
+            raised = level(8.dp, 0.42f, 0.54f),
+            floating = level(16.dp, 0.48f, 0.62f),
+            overlay = level(28.dp, 0.56f, 0.72f),
+        )
+    } else {
+        MapMeDepth(
+            flat = DepthLevel(0.dp, Color.Transparent, Color.Transparent),
+            resting = level(3.dp, 0.10f, 0.13f),
+            raised = level(10.dp, 0.12f, 0.16f),
+            floating = level(20.dp, 0.14f, 0.19f),
+            overlay = level(32.dp, 0.17f, 0.23f),
+        )
+    }
+}
 
 /**
  * How far the world behind the glass is pushed out of focus.
  *
- * Blur is expensive and, past a point, cheap-looking. Three levels is enough:
- * [whisper] for small controls where you still want to read the map through
- * them, [glass] for the standard panel, [deep] only when the interface has
- * genuinely taken over the screen.
+ * Three levels is enough. [whisper] for small controls where the ground should
+ * still read through them, [glass] for the standard panel, [deep] only when
+ * the interface has genuinely taken over the screen.
  *
- * Real backdrop blur needs API 31. Below that, [MapMeGlass] compensates with a
- * denser tint instead of pretending — the material stays believable, it just
- * stops being see-through.
+ * Real backdrop blur needs API 31; below that [com.mapme.core.design.component.GlassSurface]
+ * thickens its veil instead of pretending.
  */
 @Immutable
 data class MapMeBlur(
-    val whisper: Dp = 12.dp,
-    val glass: Dp = 24.dp,
-    val deep: Dp = 40.dp,
+    val whisper: Dp = 14.dp,
+    val glass: Dp = 28.dp,
+    val deep: Dp = 44.dp,
 )
 
-internal val LocalMapMeDepth = staticCompositionLocalOf { MapMeDepth() }
+internal val LocalMapMeDepth = staticCompositionLocalOf { mapMeDepth(mapMeDarkColors()) }
 internal val LocalMapMeBlur = staticCompositionLocalOf { MapMeBlur() }

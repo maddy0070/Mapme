@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.matchParentSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,41 +34,42 @@ import com.mapme.core.design.theme.MapMeTheme
 /**
  * How solid a pane of MapMe glass is.
  *
- * The choice is about legibility, not decoration: the more text a pane holds,
- * the more it has to earn its contrast back from the map underneath.
+ * The choice is about legibility, not taste: the more text a pane holds, the
+ * more contrast it has to buy back from whatever is underneath it.
  */
 enum class GlassTone {
-    /** Small controls. You should still be able to read the map through them. */
+    /** Small controls. The ground should still read through them. */
     Whisper,
 
-    /** The default pane: journey cards, the live panel, floating information. */
+    /** The default pane: floating information over the journey. */
     Standard,
 
-    /** Sheets and dialogs, where the interface has taken over the screen. */
+    /** Sheets and dialogs, where the interface has taken the screen. */
     Dense,
 }
 
 /**
  * A pane of MapMe glass.
  *
- * The material is four things stacked in a believable order: the world behind
- * it, thrown out of focus; a veil that buys back contrast; a tint that catches
- * light from above; and a bright hairline along the top edge where a real pane
- * would catch the sky. The shadow underneath is the least of it.
+ * Four things stacked in a believable order: the world behind it thrown out of
+ * focus, a veil that buys back contrast, a tint that catches light from above,
+ * and a bright hairline along the top edge where a real pane would catch the
+ * sky.
  *
- * ## About the blur
+ * **Glass is rationed.** It is not a texture to spread over the interface —
+ * it exists to say *this is floating above your journey*. A screen where
+ * everything is glass has said nothing. In practice that means one pane per
+ * screen, plus the occasional small control.
  *
- * Android only gained real render-time blur in API 31. Below that, [blur] is a
- * no-op — so instead of shipping a see-through pane nobody can read, MapMe
- * thickens the veil and the glass simply becomes frostier. It still looks like
- * glass; it just stops being a window.
+ * **The two modes are different materials.** On night, glass is a pale veil
+ * catching light. On paper it is genuine frost: much whiter, because a barely
+ * tinted pane over a bright ground is just a smudge. Both blur the same.
  *
- * What gets blurred is, in order: an explicit [backdrop], or whatever
- * [GlassBackdropHost] this pane sits inside, or nothing — in which case the
- * pane is an opaque frosted veil, which is the right answer over a flat
- * ground anyway.
+ * Real backdrop blur needs API 31. Below that the veil thickens and the pane
+ * becomes frostier rather than pretending — still glass, just no longer a
+ * window.
  *
- * @param backdrop overrides the surrounding host for this pane only.
+ * @param backdrop overrides the surrounding [GlassBackdropHost] for this pane.
  */
 @Composable
 fun GlassSurface(
@@ -89,27 +91,33 @@ fun GlassSurface(
         GlassTone.Standard -> blurScale.glass
         GlassTone.Dense -> blurScale.deep
     }
-    val tintScale = when (tone) {
-        GlassTone.Whisper -> 0.8f
-        GlassTone.Standard -> 1.0f
-        GlassTone.Dense -> 1.35f
+
+    // Paper needs far more veil than night: white frost over a bright ground
+    // has to work much harder to become a surface you can read on.
+    val baseVeil = if (colors.isDark) {
+        when (tone) {
+            GlassTone.Whisper -> 0.20f
+            GlassTone.Standard -> 0.34f
+            GlassTone.Dense -> 0.58f
+        }
+    } else {
+        when (tone) {
+            GlassTone.Whisper -> 0.44f
+            GlassTone.Standard -> 0.62f
+            GlassTone.Dense -> 0.84f
+        }
     }
-    val baseVeil = when (tone) {
-        GlassTone.Whisper -> 0.20f
-        GlassTone.Standard -> 0.34f
-        GlassTone.Dense -> 0.60f
-    }
-    // No real blur, or nothing behind us to refract: pay for legibility with
-    // opacity instead.
+    val veilColor = if (colors.isDark) colors.surface else Color.White
+
     val hasBackdrop = backdrop != null || host != null
     val blurAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && hasBackdrop
-    val veil = (if (blurAvailable) baseVeil else baseVeil + 0.24f).coerceAtMost(0.94f)
+    val veil = (if (blurAvailable) baseVeil else baseVeil + 0.22f).coerceAtMost(0.96f)
 
     val tint = colors.glassTint
     val tintBrush = Brush.verticalGradient(
         listOf(
-            tint.copy(alpha = (tint.alpha * tintScale * 1.7f).coerceAtMost(1f)),
-            tint.copy(alpha = (tint.alpha * tintScale * 0.85f).coerceAtMost(1f)),
+            tint.copy(alpha = (tint.alpha * 1.35f).coerceAtMost(1f)),
+            tint.copy(alpha = (tint.alpha * 0.7f).coerceAtMost(1f)),
         ),
     )
 
@@ -141,7 +149,7 @@ fun GlassSurface(
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .background(colors.surface.copy(alpha = veil))
+                .background(veilColor.copy(alpha = veil))
                 .background(tintBrush)
                 .drawBehind { drawTopSheen(colors.glassSheen) },
         )
@@ -157,10 +165,7 @@ fun GlassSurface(
     }
 }
 
-/**
- * [GlassSurface] with MapMe's standard interior padding. This is the pane you
- * want nine times out of ten.
- */
+/** [GlassSurface] with MapMe's standard interior padding. */
 @Composable
 fun GlassCard(
     modifier: Modifier = Modifier,
@@ -182,20 +187,19 @@ fun GlassCard(
 }
 
 /**
- * The bright hairline along the top edge. It is the single cheapest thing that
- * makes a translucent rectangle read as a physical pane, and it fades out
- * towards the corners the way a real highlight would.
+ * The bright hairline along the top edge — the cheapest thing that makes a
+ * translucent rectangle read as a physical pane. It fades towards the corners
+ * the way a real highlight would.
  */
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTopSheen(sheen: Color) {
-    val strokeHeight = 1.dp.toPx()
     drawRect(
         brush = Brush.horizontalGradient(
             0f to Color.Transparent,
-            0.25f to sheen,
-            0.75f to sheen,
+            0.22f to sheen,
+            0.78f to sheen,
             1f to Color.Transparent,
         ),
         topLeft = Offset.Zero,
-        size = Size(size.width, strokeHeight),
+        size = Size(size.width, 1.dp.toPx()),
     )
 }

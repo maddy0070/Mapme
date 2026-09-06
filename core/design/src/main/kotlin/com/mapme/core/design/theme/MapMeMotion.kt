@@ -13,52 +13,45 @@ import androidx.compose.runtime.staticCompositionLocalOf
  * Motion here has one job: to explain where something came from and where it
  * went. Nothing animates to look nice.
  *
- * The durations are named after intent, not milliseconds, because the right
- * question at a call site is "is this a state flip or a journey unfolding?"
- * — not "is this 200 or 300".
+ * Durations are named after intent, because the right question at a call site
+ * is "is this a state flip or a journey unfolding?", not "is this 200 or 300".
  *
- * - [instant] / [quick] — a control acknowledging a finger. Must feel like a
- *   physical response, so it has to beat the eye.
- * - [brisk] — a state change on something already on screen.
- * - [smooth] — something arriving or leaving.
- * - [flowing] — a panel expanding, a sheet, a map camera nudge.
- * - [cinematic] — the map travelling somewhere, a day transitioning into
- *   another day. Long enough to follow with your eyes.
- * - [epic] — reserved for the trail drawing itself. This is the moment the
- *   product is selling; it is allowed to take its time.
+ * The onboarding transition is the reason [travel] exists. Moving between
+ * pages there is not a page change — it is a camera pulling back from one
+ * continuous drawing — and a camera move that lands in 300ms reads as a cut.
  */
 @Immutable
 data class MapMeMotion(
     val instant: Int = 90,
-    val quick: Int = 140,
-    val brisk: Int = 200,
-    val smooth: Int = 300,
-    val flowing: Int = 450,
-    val cinematic: Int = 700,
-    val epic: Int = 1400,
+    val quick: Int = 150,
+    val brisk: Int = 220,
+    val smooth: Int = 320,
+    val flowing: Int = 480,
+    /** A camera move across the same physical space. */
+    val travel: Int = 780,
+    /** The trail drawing itself. The moment the product is selling. */
+    val epic: Int = 1600,
 
-    /**
-     * The default. Leaves quickly, arrives gently — the shape of something
-     * with mass.
-     */
-    val standard: Easing = CubicBezierEasing(0.2f, 0f, 0f, 1f),
-    /** For things entering the screen. */
+    /** The default. Leaves quickly, arrives gently — the shape of mass. */
+    val standard: Easing = CubicBezierEasing(0.22f, 0f, 0f, 1f),
+    /** Entering the screen. */
     val entering: Easing = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1f),
-    /** For things leaving. Gets out of the way fast. */
+    /** Leaving. Gets out of the way. */
     val exiting: Easing = CubicBezierEasing(0.3f, 0f, 0.8f, 0.15f),
     /** Symmetric and calm. Ambient loops, breathing, glows. */
     val gentle: Easing = CubicBezierEasing(0.4f, 0f, 0.2f, 1f),
-    /** Constant speed. Only for progress and trail replay. */
-    val linear: Easing = Easing { fraction -> fraction },
+    /** Camera moves. Slow to start, long glide, soft stop. */
+    val cinematic: Easing = CubicBezierEasing(0.16f, 0.8f, 0.12f, 1f),
+    val linear: Easing = Easing { it },
 ) {
-    /** A control answering a press. Tight, no overshoot you can see. */
+    /** A control answering a press. No overshoot the eye can catch. */
     fun <T> snappy(): SpringSpec<T> = spring(dampingRatio = 0.9f, stiffness = 900f)
 
-    /** Something with weight settling into place. The MapMe default spring. */
-    fun <T> physical(): SpringSpec<T> = spring(dampingRatio = 0.75f, stiffness = 380f)
+    /** Something with weight settling into place. The MapMe default. */
+    fun <T> physical(): SpringSpec<T> = spring(dampingRatio = 0.78f, stiffness = 400f)
 
     /** Large surfaces: sheets, expanding cards. Never bounces. */
-    fun <T> settling(): SpringSpec<T> = spring(dampingRatio = 1f, stiffness = 220f)
+    fun <T> settling(): SpringSpec<T> = spring(dampingRatio = 1f, stiffness = 240f)
 }
 
 internal val LocalMapMeMotion = staticCompositionLocalOf { MapMeMotion() }

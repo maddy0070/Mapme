@@ -2,18 +2,18 @@
 <resources>
     <!--
       The platform theme exists only to paint the window before Compose takes
-      over. Everything visible after that comes from MapMeTheme, not from here.
-      A cold start therefore goes ink -> mark -> app, with no white flash.
+      over. Everything after that comes from MapMeTheme. A cold start goes
+      ground -> mark -> app, with no flash of the wrong colour in either mode.
     -->
-    <style name="Theme.MapMe" parent="@android:style/Theme.Material.NoActionBar">
-        <item name="android:windowBackground">@color/mapme_canvas</item>
+    <style name="Theme.MapMe" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/mapme_window</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
     <style name="Theme.MapMe.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/mapme_canvas</item>
+        <item name="windowSplashScreenBackground">@color/mapme_window</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_mark</item>
         <item name="postSplashScreenTheme">@style/Theme.MapMe</item>
     </style>

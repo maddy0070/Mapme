@@ -56,10 +56,14 @@ dependencies {
  * platform grotesque with the MapMe metrics applied. See BrandFonts.kt.
  */
 val brandFonts = mapOf(
-    "Inter.ttf" to "https://github.com/google/fonts/raw/main/ofl/inter/Inter%5Bopsz,wght%5D.ttf",
-    "SpaceGrotesk.ttf" to "https://github.com/google/fonts/raw/main/ofl/spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf",
-    "OFL-Inter.txt" to "https://github.com/google/fonts/raw/main/ofl/inter/OFL.txt",
-    "OFL-SpaceGrotesk.txt" to "https://github.com/google/fonts/raw/main/ofl/spacegrotesk/OFL.txt",
+    "BricolageGrotesque.ttf" to
+        "https://github.com/google/fonts/raw/main/ofl/bricolagegrotesque/BricolageGrotesque%5Bopsz,wdth,wght%5D.ttf",
+    "PlusJakartaSans.ttf" to
+        "https://github.com/google/fonts/raw/main/ofl/plusjakartasans/PlusJakartaSans%5Bwght%5D.ttf",
+    "OFL-BricolageGrotesque.txt" to
+        "https://github.com/google/fonts/raw/main/ofl/bricolagegrotesque/OFL.txt",
+    "OFL-PlusJakartaSans.txt" to
+        "https://github.com/google/fonts/raw/main/ofl/plusjakartasans/OFL.txt",
 )
 
 val fetchBrandFonts by tasks.registering {

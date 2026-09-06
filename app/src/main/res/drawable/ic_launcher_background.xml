@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Ink, with a single faint aurora field in the corner so the icon has depth
-     on both light and dark launcher wallpapers. -->
+<!-- A night plate, so the rose mark holds its colour on any launcher
+     wallpaper, light or dark. One faint warm bloom gives it depth. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
@@ -8,19 +8,16 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <path
-        android:pathData="M0,0 H108 V108 H0 Z"
-        android:fillColor="@color/mapme_canvas" />
+    <path android:pathData="M0,0 H108 V108 H0 Z" android:fillColor="@color/mapme_night" />
 
     <path android:pathData="M0,0 H108 V108 H0 Z">
         <aapt:attr name="android:fillColor">
             <gradient
-                android:centerX="30"
-                android:centerY="26"
-                android:gradientRadius="78"
+                android:centerX="34" android:centerY="30"
+                android:gradientRadius="82"
                 android:type="radial">
-                <item android:offset="0" android:color="#332BF5C0" />
-                <item android:offset="1" android:color="#0005080B" />
+                <item android:offset="0" android:color="#40FF2D6F" />
+                <item android:offset="1" android:color="#000E0B12" />
             </gradient>
         </aapt:attr>
     </path>

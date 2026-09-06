@@ -5,198 +5,174 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 /**
- * Every colour MapMe is allowed to use, named by what it *means*.
+ * Every colour MapMe may use, named by what it means.
  *
- * If a screen needs a colour that is not in here, that is a design decision to
- * make in the design system — not a hex value to paste into a composable.
+ * If a screen needs a colour that is not here, that is a decision to make in
+ * the design system — not a hex value to paste into a composable.
  */
 @Immutable
 data class MapMeColors(
-    /** Behind everything, including the map. */
+    /** Behind everything. */
     val canvas: Color,
-    /** Opaque panels that sit on the canvas. */
+    /** Panels resting on the canvas. */
     val surface: Color,
     /** A panel lifted off another panel. */
     val surfaceRaised: Color,
     /** Sheets and menus that cover content. */
     val surfaceOverlay: Color,
-    /** Quiet fills: input backgrounds, track behind a slider. */
+    /** Quiet fills: inputs, tracks, inactive segments. */
     val surfaceSunken: Color,
 
-    /** The tint of the glass material itself. */
     val glassTint: Color,
-    /** The hairline that gives glass a physical edge. */
     val glassBorder: Color,
-    /** The bright top edge where light catches the glass. */
     val glassSheen: Color,
-    /** Dim the world behind a modal. */
     val scrim: Color,
+    /** Shadows are tinted, never neutral black — see [MapMeDepth]. */
+    val shadowTint: Color,
 
     val textPrimary: Color,
     val textSecondary: Color,
     val textTertiary: Color,
-    /** Text placed on an [accent] fill. */
-    val textOnAccent: Color,
 
     val outline: Color,
     val outlineStrong: Color,
 
-    /** The one colour that means MapMe. Primary actions, positive results. */
+    /** You. Primary actions, the journey, anything alive. */
     val accent: Color,
-    val accentMuted: Color,
-    val accentSubtle: Color,
+    /** The accent when it must carry text or sit on a bright ground. */
+    val accentDeep: Color,
+    val accentSoft: Color,
+    /** Text placed on an [accent] fill. Differs by mode by design. */
+    val onAccent: Color,
 
-    /** Selection, focus, discovery — and the far end of the trail. */
+    /** The world. Structure, focus, selection. */
     val focus: Color,
-    val focusSubtle: Color,
+    val focusSoft: Color,
 
-    /** Live recording, the present moment, the head of the trail. */
-    val live: Color,
-    val liveSubtle: Color,
+    /** Discovery. A new place, a first, a record. Rare on purpose. */
+    val discovery: Color,
+    val discoverySoft: Color,
+    val onDiscovery: Color,
 
-    /** Milestones and personal records. Rare on purpose. */
-    val milestone: Color,
-    val milestoneSubtle: Color,
-
-    /** Destructive actions only. Never for ordinary warnings. */
     val critical: Color,
-    val criticalSubtle: Color,
+    val criticalSoft: Color,
 
-    /** Oldest point of a journey line. */
-    val trailFar: Color,
-    /** Newest point of a journey line. */
-    val trailNear: Color,
-    /** The moving head of a live journey. */
-    val trailHead: Color,
-    /** Trails from other days, kept present but quiet. */
+    /** The oldest, faintest part of a journey. Decorative, not informational. */
     val trailPast: Color,
+    val trailFar: Color,
+    val trailNear: Color,
+    /** The head. Hot, near-white on night; deep and saturated on paper. */
+    val trailHead: Color,
+    /** True only in dark mode, where the trail is light and may bloom. */
+    val trailGlows: Boolean,
 
-    // The map style is authored against these, so the basemap and the
-    // interface can never drift apart.
-    val mapLand: Color,
-    val mapLandAlt: Color,
-    val mapWater: Color,
-    val mapRoadMinor: Color,
-    val mapRoadMajor: Color,
-    val mapBuilding: Color,
-    val mapLabel: Color,
-    val mapLabelHalo: Color,
-
-    /** True when this scheme is the dark one. Drives system bar icons. */
     val isDark: Boolean,
 )
 
 /**
- * Dark is MapMe's real face — designed first, tuned longest.
+ * Night.
+ *
+ * A plum-warm charcoal that recedes, with the trail as the only source of
+ * light in the room.
  */
 fun mapMeDarkColors(): MapMeColors = MapMeColors(
-    canvas = MapMePalette.Ink00,
-    surface = MapMePalette.Ink10,
-    surfaceRaised = MapMePalette.Ink15,
-    surfaceOverlay = MapMePalette.Ink20,
-    surfaceSunken = MapMePalette.Ink05,
+    canvas = MapMePalette.Night00,
+    surface = MapMePalette.Night05,
+    surfaceRaised = MapMePalette.Night10,
+    surfaceOverlay = MapMePalette.Night20,
+    surfaceSunken = MapMePalette.Night00,
 
-    glassTint = MapMePalette.Frost00.copy(alpha = 0.07f),
-    glassBorder = MapMePalette.Frost00.copy(alpha = 0.10f),
-    glassSheen = MapMePalette.Frost00.copy(alpha = 0.22f),
-    scrim = MapMePalette.Ink00.copy(alpha = 0.62f),
+    glassTint = Color.White.copy(alpha = 0.06f),
+    glassBorder = Color.White.copy(alpha = 0.10f),
+    glassSheen = Color.White.copy(alpha = 0.20f),
+    scrim = MapMePalette.Night00.copy(alpha = 0.66f),
+    shadowTint = Color(0xFF05030A),
 
-    textPrimary = MapMePalette.Frost02,
-    textSecondary = MapMePalette.Frost30,
-    textTertiary = MapMePalette.Frost50,
-    textOnAccent = MapMePalette.Ink00,
+    textPrimary = MapMePalette.OnNight00,
+    textSecondary = MapMePalette.OnNight10,
+    textTertiary = MapMePalette.OnNight20,
 
-    outline = MapMePalette.Frost00.copy(alpha = 0.12f),
-    outlineStrong = MapMePalette.Frost00.copy(alpha = 0.24f),
+    outline = Color.White.copy(alpha = 0.10f),
+    outlineStrong = Color.White.copy(alpha = 0.22f),
 
-    accent = MapMePalette.Aurora,
-    accentMuted = MapMePalette.Aurora60,
-    accentSubtle = MapMePalette.Aurora.copy(alpha = 0.14f),
+    accent = MapMePalette.Rose,
+    accentDeep = MapMePalette.Rose70,
+    accentSoft = MapMePalette.Rose.copy(alpha = 0.16f),
+    // Ink on hot rose, not white on hot rose: white only reaches 3.6:1 here,
+    // and the dark label is the more confident look anyway.
+    onAccent = MapMePalette.Night00,
 
-    focus = MapMePalette.Beacon,
-    focusSubtle = MapMePalette.Beacon.copy(alpha = 0.16f),
+    focus = MapMePalette.Indigo,
+    focusSoft = MapMePalette.Indigo.copy(alpha = 0.18f),
 
-    live = MapMePalette.Pulse,
-    liveSubtle = MapMePalette.Pulse.copy(alpha = 0.16f),
+    discovery = MapMePalette.Citrus,
+    discoverySoft = MapMePalette.Citrus.copy(alpha = 0.16f),
+    onDiscovery = MapMePalette.Night00,
 
-    milestone = MapMePalette.Ember,
-    milestoneSubtle = MapMePalette.Ember.copy(alpha = 0.16f),
+    critical = MapMePalette.CriticalDark,
+    criticalSoft = MapMePalette.CriticalDark.copy(alpha = 0.16f),
 
-    critical = MapMePalette.Critical,
-    criticalSubtle = MapMePalette.Critical.copy(alpha = 0.16f),
-
-    trailFar = MapMePalette.Beacon,
-    trailNear = MapMePalette.Aurora,
-    trailHead = MapMePalette.Pulse,
-    trailPast = MapMePalette.Beacon.copy(alpha = 0.28f),
-
-    mapLand = MapMePalette.Ink05,
-    mapLandAlt = Color(0xFF0A1512),
-    mapWater = Color(0xFF061218),
-    mapRoadMinor = MapMePalette.Ink20,
-    mapRoadMajor = MapMePalette.Ink30,
-    mapBuilding = MapMePalette.Ink15,
-    mapLabel = MapMePalette.Frost40,
-    mapLabelHalo = MapMePalette.Ink00,
+    trailPast = MapMePalette.Rose30,
+    trailFar = MapMePalette.Rose50,
+    trailNear = MapMePalette.Rose,
+    trailHead = MapMePalette.Rose95,
+    trailGlows = true,
 
     isDark = true,
 )
 
 /**
- * Light exists so MapMe is usable in direct sun. It borrows the same four
- * signal hues against a cool paper ground; it is not a second design.
+ * Paper.
+ *
+ * Not an inversion of night — a different design with the same voice. The
+ * ground is a warm white with a rose whisper, cards are pure white floating on
+ * it, ink is a soft plum-black rather than a hard black, and depth comes from
+ * rose-tinted shadows. The trail stops glowing and becomes pigment: deeper,
+ * denser, printed rather than lit.
  */
 fun mapMeLightColors(): MapMeColors = MapMeColors(
-    canvas = Color(0xFFEDF2F5),
-    surface = Color(0xFFFFFFFF),
-    surfaceRaised = Color(0xFFFFFFFF),
-    surfaceOverlay = Color(0xFFFFFFFF),
-    surfaceSunken = Color(0xFFE4ECF0),
+    canvas = MapMePalette.Paper05,
+    surface = MapMePalette.Paper00,
+    surfaceRaised = MapMePalette.Paper00,
+    surfaceOverlay = MapMePalette.Paper00,
+    surfaceSunken = MapMePalette.Paper10,
 
-    glassTint = MapMePalette.Frost00.copy(alpha = 0.62f),
-    glassBorder = MapMePalette.Ink00.copy(alpha = 0.08f),
-    glassSheen = MapMePalette.Frost00.copy(alpha = 0.85f),
-    scrim = MapMePalette.Ink00.copy(alpha = 0.32f),
+    glassTint = Color.White.copy(alpha = 0.68f),
+    glassBorder = MapMePalette.OnPaper00.copy(alpha = 0.07f),
+    glassSheen = Color.White.copy(alpha = 0.92f),
+    scrim = MapMePalette.OnPaper00.copy(alpha = 0.28f),
+    // A warm shadow on warm paper. Neutral grey here reads as dirt.
+    shadowTint = Color(0xFF4A1E33),
 
-    textPrimary = MapMePalette.Ink10,
-    textSecondary = Color(0xFF44606E),
-    textTertiary = Color(0xFF566A74),
-    textOnAccent = MapMePalette.Ink00,
+    textPrimary = MapMePalette.OnPaper00,
+    textSecondary = MapMePalette.OnPaper10,
+    textTertiary = MapMePalette.OnPaper20,
 
-    outline = MapMePalette.Ink00.copy(alpha = 0.10f),
-    outlineStrong = MapMePalette.Ink00.copy(alpha = 0.20f),
+    outline = MapMePalette.OnPaper00.copy(alpha = 0.09f),
+    outlineStrong = MapMePalette.OnPaper00.copy(alpha = 0.18f),
 
-    // Aurora itself is far too light to sit on paper — this is the same hue
-    // taken down until text on it is readable.
-    accent = Color(0xFF008E73),
-    accentMuted = Color(0xFF00705B),
-    accentSubtle = Color(0xFF008E73).copy(alpha = 0.12f),
+    // Hot rose is beautiful as a fill but only 3.5:1 on paper, so on light the
+    // accent that carries text is the deeper one.
+    accent = MapMePalette.Rose60,
+    accentDeep = MapMePalette.Rose50,
+    accentSoft = MapMePalette.Rose.copy(alpha = 0.12f),
+    onAccent = Color.White,
 
-    focus = Color(0xFF2B5BE8),
-    focusSubtle = Color(0xFF2B5BE8).copy(alpha = 0.12f),
+    focus = MapMePalette.Indigo50,
+    focusSoft = MapMePalette.Indigo.copy(alpha = 0.12f),
 
-    live = Color(0xFFE0177A),
-    liveSubtle = Color(0xFFE0177A).copy(alpha = 0.12f),
+    discovery = MapMePalette.Citrus50,
+    discoverySoft = MapMePalette.Citrus.copy(alpha = 0.28f),
+    onDiscovery = Color.White,
 
-    milestone = Color(0xFFB77800),
-    milestoneSubtle = Color(0xFFB77800).copy(alpha = 0.14f),
+    critical = MapMePalette.CriticalLight,
+    criticalSoft = MapMePalette.CriticalLight.copy(alpha = 0.12f),
 
-    critical = Color(0xFFD32B24),
-    criticalSubtle = Color(0xFFD32B24).copy(alpha = 0.12f),
-
-    trailFar = Color(0xFF2B5BE8),
-    trailNear = Color(0xFF008E73),
-    trailHead = Color(0xFFE0177A),
-    trailPast = Color(0xFF2B5BE8).copy(alpha = 0.24f),
-
-    mapLand = Color(0xFFF2F6F8),
-    mapLandAlt = Color(0xFFE6F0EC),
-    mapWater = Color(0xFFD6E6EF),
-    mapRoadMinor = Color(0xFFFFFFFF),
-    mapRoadMajor = Color(0xFFE9EFF2),
-    mapBuilding = Color(0xFFE8EEF1),
-    mapLabel = Color(0xFF5C7683),
-    mapLabelHalo = Color(0xFFFFFFFF),
+    trailPast = MapMePalette.Rose90,
+    trailFar = MapMePalette.Rose80,
+    trailNear = MapMePalette.Rose70,
+    trailHead = MapMePalette.Rose40,
+    trailGlows = false,
 
     isDark = false,
 )

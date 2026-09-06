@@ -19,115 +19,53 @@ import com.mapme.core.design.theme.LocalMapMeContentColor
 import com.mapme.core.design.theme.MapMeTheme
 
 /**
- * MapMe draws its own icons.
+ * MapMe draws its own icons, to one handwriting.
  *
- * Not because the standard set is bad, but because an icon set is a
- * handwriting: a 24dp grid, a 2dp stroke, round caps, round joins, and no
- * detail smaller than the stroke itself. Mixing two handwritings is the single
- * fastest way to make a product look assembled. This set stays small on
- * purpose — an icon is added when a screen genuinely needs one, and it is
- * drawn to these rules.
+ * **The rules.** A 24dp grid. A 2dp stroke, never varied. Round caps and round
+ * joins on everything. Curves that ease into their straights rather than
+ * meeting them at a corner — the same squarical instinct that governs
+ * [com.mapme.core.design.theme.SquircleShape]. No gloss, no gradients, no
+ * fills except where a shape is genuinely solid, and no second icon family
+ * ever.
+ *
+ * **The set is deliberately tiny.** Three icons, because three is what the
+ * current screens need. An icon gets drawn when a screen genuinely cannot
+ * speak without it — a set that grows ahead of its screens is how a product
+ * ends up with four visual dialects.
  */
 object MapMeIcons {
 
-    /** Where you are, or where something happened. */
-    val Pin: ImageVector by lazy {
-        icon("Pin") {
+    /** Forward. Onward. The only directional icon MapMe has. */
+    val ArrowRight: ImageVector by lazy {
+        icon("ArrowRight") {
             stroked {
-                moveTo(12f, 21.5f)
-                curveTo(12f, 21.5f, 4.6f, 14.7f, 4.6f, 9.9f)
-                curveTo(4.6f, 5.8f, 7.9f, 2.5f, 12f, 2.5f)
-                curveTo(16.1f, 2.5f, 19.4f, 5.8f, 19.4f, 9.9f)
-                curveTo(19.4f, 14.7f, 12f, 21.5f, 12f, 21.5f)
-                close()
-            }
-            stroked {
-                moveTo(9.4f, 9.7f)
-                arcTo(2.6f, 2.6f, 0f, true, true, 14.6f, 9.7f)
-                arcTo(2.6f, 2.6f, 0f, true, true, 9.4f, 9.7f)
-                close()
-            }
-        }
-    }
-
-    /** A journey. The route with its start behind it and its head ahead. */
-    val Trail: ImageVector by lazy {
-        icon("Trail") {
-            stroked {
-                moveTo(5f, 18.5f)
-                curveTo(9.2f, 18.5f, 8f, 12f, 12f, 12f)
-                curveTo(16f, 12f, 14.8f, 5.5f, 19f, 5.5f)
-            }
-            filled {
-                circle(5f, 18.5f, 2.1f)
-            }
-            filled {
-                circle(19f, 5.5f, 2.1f)
-            }
-        }
-    }
-
-    /** A day, a week, a month. Time as a thing you can pick. */
-    val Calendar: ImageVector by lazy {
-        icon("Calendar") {
-            stroked {
-                moveTo(6.5f, 5.5f)
-                lineTo(17.5f, 5.5f)
-                arcTo(2.5f, 2.5f, 0f, false, true, 20f, 8f)
-                lineTo(20f, 18f)
-                arcTo(2.5f, 2.5f, 0f, false, true, 17.5f, 20.5f)
-                lineTo(6.5f, 20.5f)
-                arcTo(2.5f, 2.5f, 0f, false, true, 4f, 18f)
-                lineTo(4f, 8f)
-                arcTo(2.5f, 2.5f, 0f, false, true, 6.5f, 5.5f)
-                close()
-            }
-            stroked {
-                moveTo(4f, 10.2f)
-                lineTo(20f, 10.2f)
-            }
-            stroked {
-                moveTo(8.5f, 3.2f)
-                lineTo(8.5f, 7f)
-            }
-            stroked {
-                moveTo(15.5f, 3.2f)
-                lineTo(15.5f, 7f)
-            }
-        }
-    }
-
-    /** Replay a day. */
-    val Play: ImageVector by lazy {
-        icon("Play") {
-            stroked {
-                moveTo(9f, 6.2f)
+                moveTo(4.5f, 12f)
                 lineTo(18.2f, 12f)
-                lineTo(9f, 17.8f)
-                close()
+            }
+            stroked {
+                // Softened at the elbow rather than mitred to a point.
+                moveTo(12.6f, 6.0f)
+                curveTo(13.1f, 8.0f, 15.4f, 10.6f, 18.2f, 12f)
+                curveTo(15.4f, 13.4f, 13.1f, 16.0f, 12.6f, 18.0f)
             }
         }
     }
 
-    /** Basemap and overlay choices. */
-    val Layers: ImageVector by lazy {
-        icon("Layers") {
+    /** Go round again. Used for replaying the intro. */
+    val Replay: ImageVector by lazy {
+        icon("Replay") {
             stroked {
-                moveTo(12f, 3f)
-                lineTo(21f, 8f)
-                lineTo(12f, 13f)
-                lineTo(3f, 8f)
-                close()
+                // A squircle-flavoured loop, open at the top right.
+                moveTo(19.0f, 8.4f)
+                curveTo(20.1f, 12.4f, 18.1f, 16.8f, 14.2f, 18.6f)
+                curveTo(10.1f, 20.4f, 5.4f, 18.7f, 3.6f, 14.8f)
+                curveTo(1.8f, 10.8f, 3.5f, 6.1f, 7.4f, 4.3f)
+                curveTo(10.9f, 2.7f, 15.0f, 3.8f, 17.3f, 6.7f)
             }
             stroked {
-                moveTo(3.4f, 12.4f)
-                lineTo(12f, 17.2f)
-                lineTo(20.6f, 12.4f)
-            }
-            stroked {
-                moveTo(3.4f, 16.4f)
-                lineTo(12f, 21.2f)
-                lineTo(20.6f, 16.4f)
+                moveTo(11.6f, 6.6f)
+                lineTo(17.9f, 7.1f)
+                lineTo(17.1f, 13.0f)
             }
         }
     }
@@ -136,23 +74,12 @@ object MapMeIcons {
     val Sparkle: ImageVector by lazy {
         icon("Sparkle") {
             filled {
-                moveTo(12f, 2.6f)
-                curveTo(12.7f, 8.1f, 15.9f, 11.3f, 21.4f, 12f)
-                curveTo(15.9f, 12.7f, 12.7f, 15.9f, 12f, 21.4f)
-                curveTo(11.3f, 15.9f, 8.1f, 12.7f, 2.6f, 12f)
-                curveTo(8.1f, 11.3f, 11.3f, 8.1f, 12f, 2.6f)
+                moveTo(12f, 2.8f)
+                curveTo(12.8f, 8.2f, 15.8f, 11.2f, 21.2f, 12f)
+                curveTo(15.8f, 12.8f, 12.8f, 15.8f, 12f, 21.2f)
+                curveTo(11.2f, 15.8f, 8.2f, 12.8f, 2.8f, 12f)
+                curveTo(8.2f, 11.2f, 11.2f, 8.2f, 12f, 2.8f)
                 close()
-            }
-        }
-    }
-
-    /** Go deeper. Always points the way travel happens, never back. */
-    val ChevronRight: ImageVector by lazy {
-        icon("ChevronRight") {
-            stroked {
-                moveTo(9.5f, 5f)
-                lineTo(16.3f, 12f)
-                lineTo(9.5f, 19f)
             }
         }
     }
@@ -161,10 +88,9 @@ object MapMeIcons {
 /**
  * Draws a MapMe icon.
  *
- * Pass a [contentDescription] when the icon is the only thing carrying the
- * meaning, and leave it null when there is a label next to it — a screen
- * reader announcing "chevron, open day" twice is worse than not announcing the
- * chevron at all.
+ * Pass a [contentDescription] only when the icon is the sole carrier of the
+ * meaning. Next to a label it should stay null — a screen reader announcing
+ * "arrow, Continue" is worse than not announcing the arrow.
  */
 @Composable
 fun MapMeIcon(
@@ -186,7 +112,7 @@ fun MapMeIcon(
     )
 }
 
-// --- Drawing helpers -------------------------------------------------------
+// --- the handwriting -------------------------------------------------------
 
 private const val GRID = 24f
 private const val STROKE = 2f
@@ -203,10 +129,7 @@ private class IconScope(val builder: ImageVector.Builder) {
     }
 
     fun filled(block: PathBuilder.() -> Unit) {
-        builder.path(
-            fill = SolidColor(Color.Black),
-            pathBuilder = block,
-        )
+        builder.path(fill = SolidColor(Color.Black), pathBuilder = block)
     }
 }
 
@@ -220,12 +143,4 @@ private fun icon(name: String, content: IconScope.() -> Unit): ImageVector {
     )
     IconScope(builder).content()
     return builder.build()
-}
-
-/** A full circle, since the path DSL only offers arcs. */
-private fun PathBuilder.circle(cx: Float, cy: Float, r: Float) {
-    moveTo(cx - r, cy)
-    arcTo(r, r, 0f, true, true, cx + r, cy)
-    arcTo(r, r, 0f, true, true, cx - r, cy)
-    close()
 }

@@ -21,18 +21,21 @@ import com.mapme.core.design.theme.MapMeColors
 import com.mapme.core.design.theme.MapMeTheme
 
 /**
- * The ground MapMe sits on when there is no map yet.
+ * The ground MapMe stands on before there is a map to stand on.
  *
- * Two enormous, very faint aurora fields drift across the ink on a half-minute
- * cycle. Individually they are almost invisible; together they stop a dark
- * screen from reading as a dead one, and they cost one draw call each because
- * they are gradients rather than particles or shaders.
+ * Two enormous, very faint colour fields drift across it on a half-minute
+ * cycle — rose high, indigo low. Individually they are almost invisible;
+ * together they stop the screen from reading as dead, and they cost one draw
+ * call each because they are gradients rather than particles or shaders.
  *
- * It is also a [GlassBackdropHost], so panes laid on top of it genuinely
- * refract the aurora.
+ * The two modes are lit differently. Night is a room with two distant lights
+ * in it. Paper is a sheet with the faintest warm bloom, because a bright wash
+ * on white reads as a printing fault rather than atmosphere — so on light the
+ * fields are weaker and the vignette is gone entirely.
  *
- * This is deliberately *not* wallpaper for screens that have a map. Once the
- * map is the ground, the map is the ground.
+ * It is also a [GlassBackdropHost], so panes laid over it genuinely refract
+ * what is behind them. This is deliberately *not* wallpaper for screens that
+ * have a map: once the map is the ground, the map is the ground.
  */
 @Composable
 fun MapMeBackground(
@@ -45,15 +48,15 @@ fun MapMeBackground(
     val drifting = animated && !reduceMotion
 
     val phase: Float = if (drifting) {
-        val transition = rememberInfiniteTransition(label = "AuroraDrift")
+        val transition = rememberInfiniteTransition(label = "AtmosphereDrift")
         val value by transition.animateFloat(
             initialValue = 0f,
             targetValue = 1f,
             animationSpec = infiniteRepeatable(
-                animation = tween(32_000, easing = MapMeTheme.motion.gentle),
+                animation = tween(34_000, easing = MapMeTheme.motion.gentle),
                 repeatMode = RepeatMode.Reverse,
             ),
-            label = "AuroraDriftPhase",
+            label = "AtmospherePhase",
         )
         value
     } else {
@@ -66,45 +69,54 @@ fun MapMeBackground(
             Box(
                 Modifier
                     .fillMaxSize()
-                    .drawBehind { drawAurora(colors, phase) },
+                    .drawBehind { drawAtmosphere(colors, phase) },
             )
         },
         content = content,
     )
 }
 
-private fun DrawScope.drawAurora(colors: MapMeColors, phase: Float) {
+private fun DrawScope.drawAtmosphere(colors: MapMeColors, phase: Float) {
     drawRect(colors.canvas)
 
     val w = size.width
     val h = size.height
     val reach = maxOf(w, h)
+    val dark = colors.isDark
 
-    // High and cool, drifting right.
+    // Rose, high and warm, drifting right.
     drawRect(
         brush = Brush.radialGradient(
-            colors = listOf(colors.accent.copy(alpha = 0.13f), Color.Transparent),
-            center = Offset(w * (0.18f + 0.24f * phase), h * (0.14f + 0.06f * phase)),
-            radius = reach * 0.85f,
+            colors = listOf(
+                colors.accent.copy(alpha = if (dark) 0.15f else 0.10f),
+                Color.Transparent,
+            ),
+            center = Offset(w * (0.16f + 0.26f * phase), h * (0.12f + 0.07f * phase)),
+            radius = reach * 0.88f,
         ),
     )
 
-    // Low and deep, drifting the other way.
+    // Indigo, low and cool, drifting the other way.
     drawRect(
         brush = Brush.radialGradient(
-            colors = listOf(colors.focus.copy(alpha = 0.15f), Color.Transparent),
-            center = Offset(w * (0.92f - 0.30f * phase), h * (0.78f - 0.10f * phase)),
-            radius = reach * 0.75f,
+            colors = listOf(
+                colors.focus.copy(alpha = if (dark) 0.13f else 0.07f),
+                Color.Transparent,
+            ),
+            center = Offset(w * (0.90f - 0.28f * phase), h * (0.82f - 0.10f * phase)),
+            radius = reach * 0.78f,
         ),
     )
 
-    // Settle back into the ink towards the bottom, so anything sitting over
-    // the lower half always has a quiet ground underneath it.
-    drawRect(
-        brush = Brush.verticalGradient(
-            0f to Color.Transparent,
-            0.55f to colors.canvas.copy(alpha = 0.55f),
-            1f to colors.canvas,
-        ),
-    )
+    if (dark) {
+        // Settle back into the ink low down, so content over the bottom half
+        // always has a quiet ground beneath it.
+        drawRect(
+            brush = Brush.verticalGradient(
+                0f to Color.Transparent,
+                0.5f to colors.canvas.copy(alpha = 0.5f),
+                1f to colors.canvas,
+            ),
+        )
+    }
 }

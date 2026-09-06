@@ -1,6 +1,7 @@
 package com.mapme.core.design.theme
 
 import android.app.Activity
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
@@ -15,32 +16,37 @@ import com.mapme.core.design.haptics.LocalMapMeHaptics
 import com.mapme.core.design.haptics.rememberMapMeHaptics
 
 /**
- * The colour text inherits from its surroundings. Set it once when you change
- * the ground under a block of content — on an accent fill, inside a dark
- * sheet — instead of colouring every string at the call site.
+ * The colour text inherits from its surroundings. Set it once when the ground
+ * under a block of content changes — on an accent fill, inside a sheet —
+ * instead of colouring every string at the call site.
  */
 val LocalMapMeContentColor = compositionLocalOf { Color.Unspecified }
 
 /**
  * Wraps MapMe in its design system.
  *
- * Notice what is *not* here: no MaterialTheme. MapMe is built on Compose
- * foundation and draws its own components, because a product whose whole
- * promise is "this doesn't look like anything else" cannot inherit its buttons
- * from a spec that ships on a billion devices. The cost is that MapMe owns its
- * primitives; the benefit is that nothing can quietly drift back to default.
- *
- * @param darkTheme dark is MapMe's real face — see the constitution, §4. Light
- *   exists so the app survives direct sunlight, and is never the reference.
+ * Notice what is not here: no MaterialTheme. MapMe is built on Compose
+ * foundation and draws its own components, because a product whose promise is
+ * "this looks like nothing else" cannot inherit its buttons from a spec that
+ * ships on a billion devices. The cost is that MapMe owns its primitives; the
+ * benefit is that nothing can quietly drift back to default.
  */
 @Composable
 fun MapMeTheme(
-    darkTheme: Boolean = true,
+    appearance: AppearanceState = rememberAppearanceState(),
     reduceMotion: Boolean = rememberSystemReduceMotion(),
     content: @Composable () -> Unit,
 ) {
+    val systemDark = isSystemInDarkTheme()
+    val dark = when (appearance.mode) {
+        ThemeMode.System -> systemDark
+        ThemeMode.Light -> false
+        ThemeMode.Dark -> true
+    }
+
     val context = LocalContext.current
-    val colors = remember(darkTheme) { if (darkTheme) mapMeDarkColors() else mapMeLightColors() }
+    val colors = remember(dark) { if (dark) mapMeDarkColors() else mapMeLightColors() }
+    val depth = remember(colors) { mapMeDepth(colors) }
     // Font resolution touches the asset manager, so it happens once per process
     // rather than once per recomposition.
     val fonts = remember(context.applicationContext) { BrandFonts.resolve(context) }
@@ -52,8 +58,8 @@ fun MapMeTheme(
         SideEffect {
             val window = (view.context as? Activity)?.window ?: return@SideEffect
             WindowCompat.getInsetsController(window, view).apply {
-                isAppearanceLightStatusBars = !colors.isDark
-                isAppearanceLightNavigationBars = !colors.isDark
+                isAppearanceLightStatusBars = !dark
+                isAppearanceLightNavigationBars = !dark
             }
         }
     }
@@ -63,11 +69,12 @@ fun MapMeTheme(
         LocalMapMeType provides type,
         LocalMapMeSpacing provides MapMeSpacing(),
         LocalMapMeRadius provides MapMeRadius(),
-        LocalMapMeDepth provides MapMeDepth(),
+        LocalMapMeDepth provides depth,
         LocalMapMeBlur provides MapMeBlur(),
         LocalMapMeMotion provides MapMeMotion(),
         LocalMapMeHaptics provides haptics,
         LocalMapMeBrandFonts provides fonts,
+        LocalAppearance provides appearance,
         LocalReduceMotion provides reduceMotion,
         LocalMapMeContentColor provides colors.textPrimary,
         content = content,
@@ -80,8 +87,8 @@ internal val LocalMapMeBrandFonts = compositionLocalOf { BrandFonts.Fallback }
  * The only way design tokens should be read.
  *
  * `MapMeTheme.colors.accent`, `MapMeTheme.space.cardPadding`,
- * `MapMeTheme.type.metric` — if a value is not reachable through here, it does
- * not belong in a screen.
+ * `MapMeTheme.type.displayHero` — if a value is not reachable through here, it
+ * does not belong in a screen.
  */
 object MapMeTheme {
     val colors: MapMeColors
