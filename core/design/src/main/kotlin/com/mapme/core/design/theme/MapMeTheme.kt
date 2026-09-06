@@ -8,7 +8,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -50,23 +53,25 @@ fun MapMeTheme(
     val type = remember(fonts) { mapMeType(fonts) }
     val haptics = rememberMapMeHaptics()
 
-    val view = LocalView.current
-    if (!view.isInEditMode) {
-        SideEffect {
-            val window = (view.context as? Activity)?.window ?: return@SideEffect
-            WindowCompat.getInsetsController(window, view).apply {
-                isAppearanceLightStatusBars = !dark
-                isAppearanceLightNavigationBars = !dark
-            }
-        }
-    }
-
     // A change the person asked for spreads out from where they touched it,
     // rather than the whole interface blinking. The transition is driven from
     // here because this is the one place that knows both the request and the
     // colours it is heading towards.
     val transition = rememberThemeTransition()
     val motion = remember { MapMeMotion() }
+
+    // The status and navigation bar icons are drawn by the platform, so they
+    // are not in the snapshot the reveal erases and cannot travel with the
+    // boundary. Flipping them the instant the theme commits — which is what
+    // this used to do — puts dark icons on a still-dark screen for the whole
+    // length of the reveal. They change over once the boundary is past instead.
+    var systemBarsDark by remember { mutableStateOf(dark) }
+    LaunchedEffect(dark) {
+        // A change with no request behind it: the phone's own theme moved while
+        // Auto was selected. Nothing is revealing, so nothing has to wait.
+        if (appearance.request == null) systemBarsDark = dark
+    }
+
     LaunchedEffect(appearance.request) {
         val pending = appearance.request ?: return@LaunchedEffect
         transition.aimAt(pending.origin)
@@ -74,10 +79,25 @@ fun MapMeTheme(
             reduceMotion = reduceMotion,
             durationMillis = motion.theme,
             easing = motion.reveal,
-        ) {
-            appearance.commit(pending.mode)
-        }
+            commit = { appearance.commit(pending.mode) },
+            onBoundaryPassed = { systemBarsDark = pending.mode.resolve(systemDark) },
+        )
         appearance.clearRequest()
+    }
+
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        // Read during composition on purpose: that is what makes this
+        // recompose when the bars are due to change. It happens once per
+        // transition, not once per frame.
+        val barsDark = systemBarsDark
+        SideEffect {
+            val window = (view.context as? Activity)?.window ?: return@SideEffect
+            WindowCompat.getInsetsController(window, view).apply {
+                isAppearanceLightStatusBars = !barsDark
+                isAppearanceLightNavigationBars = !barsDark
+            }
+        }
     }
 
     ThemeRevealHost(transition = transition, rimColor = colors.accent) {

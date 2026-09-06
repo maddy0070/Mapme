@@ -177,14 +177,62 @@ class ThemeTransitionTest {
         second.cancelAndJoin()
     }
 
+    /**
+     * The system bars cannot be recorded, so they are switched rather than
+     * revealed — but not at the moment the theme commits, which would leave
+     * dark icons on a still-dark screen for the length of the reveal.
+     */
+    @Test
+    fun `the bars are told to change once, after the commit and before the end`() = runBlocking {
+        val clock = BroadcastFrameClock()
+        val transition = ThemeTransition()
+        var committed = false
+        var passes = 0
+        var progressWhenPassed = -1f
+
+        val job = launch(clock + Dispatchers.Unconfined) {
+            transition.play(
+                reduceMotion = false,
+                durationMillis = 80,
+                easing = LinearEasing,
+                onBoundaryPassed = {
+                    passes++
+                    progressWhenPassed = transition.progress.value
+                },
+            ) { committed = true }
+        }
+
+        clock.sendFrame(0L)
+        clock.sendFrame(16_000_000L)
+        assertTrue("commit must happen before the bars are told anything", committed)
+        assertEquals("told too early — the reveal has not started", 0, passes)
+
+        var t = 16_000_000L
+        repeat(12) { t += 16_000_000L; clock.sendFrame(t) }
+
+        assertEquals("the bars must be told exactly once", 1, passes)
+        assertTrue(
+            "told at $progressWhenPassed, before the boundary is clear of the top strip",
+            progressWhenPassed >= 0.4f,
+        )
+        assertTrue("told at the very end, which is just a late flip", progressWhenPassed < 1f)
+        job.cancelAndJoin()
+    }
+
     @Test
     fun `reduced motion applies the theme without any reveal at all`() = runBlocking {
         val transition = ThemeTransition()
         var committed = false
-        transition.play(reduceMotion = true, durationMillis = 380, easing = LinearEasing) {
-            committed = true
-        }
+        var passes = 0
+        transition.play(
+            reduceMotion = true,
+            durationMillis = 380,
+            easing = LinearEasing,
+            onBoundaryPassed = { passes++ },
+        ) { committed = true }
         assertTrue(committed)
+        // Nothing travels, so the bars change with everything else.
+        assertEquals(1, passes)
         assertEquals(ThemeTransition.Phase.Idle, transition.phase)
     }
 

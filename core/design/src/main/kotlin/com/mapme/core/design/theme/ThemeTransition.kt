@@ -132,6 +132,8 @@ class ThemeTransition internal constructor() {
         reduceMotion: Boolean,
         durationMillis: Int,
         easing: Easing,
+        // Ahead of [commit] so that stays the trailing lambda at every call site.
+        onBoundaryPassed: () -> Unit = {},
         commit: () -> Unit,
     ) {
         if (reduceMotion) {
@@ -139,6 +141,7 @@ class ThemeTransition internal constructor() {
             // A theme change has no information in its movement, so it simply
             // arrives.
             commit()
+            onBoundaryPassed()
             return
         }
         val mine = ++generation
@@ -168,7 +171,14 @@ class ThemeTransition internal constructor() {
             commit()
             progress.snapTo(0f)
             enter(Phase.Revealing)
-            progress.animateTo(1f, tween(durationMillis, easing = easing))
+            var passed = false
+            progress.animateTo(1f, tween(durationMillis, easing = easing)) {
+                if (!passed && value >= BOUNDARY_PASSED) {
+                    passed = true
+                    onBoundaryPassed()
+                }
+            }
+            if (!passed) onBoundaryPassed()
         } finally {
             // Only if nothing has superseded us in the meantime.
             if (generation == mine) enter(Phase.Idle)
@@ -178,6 +188,19 @@ class ThemeTransition internal constructor() {
     private companion object {
         /** Full-length catch-up for a reveal interrupted at the very start. */
         const val CATCH_UP_MILLIS = 150f
+
+        /**
+         * When anything that cannot be recorded should change over.
+         *
+         * The system bars are drawn by the platform, not by us, so they are not
+         * in the snapshot and cannot travel with the boundary — they can only
+         * be switched at some instant. The control sits at the top of the
+         * screen, so the top strip is one of the first places the boundary
+         * covers; by the time this much of the reveal has run, the whole strip
+         * has changed over and the bar icons are switching onto a background
+         * that already agrees with them.
+         */
+        const val BOUNDARY_PASSED = 0.4f
     }
 }
 
