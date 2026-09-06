@@ -32,6 +32,37 @@ stable. "Meaningful" means you were looking for something, not tapping through.
 - [ ] Navigate in and back out repeatedly. Transitions stay smooth and feel like the same space.
 - [ ] Settings → Developer options → Animator duration scale **off**: nothing disappears, everything lands in its end state, no loop keeps running.
 
+### Appearance (Auto / Light / Dark)
+
+The control cycles Auto → Light → Dark. "Auto" resolves against the phone, so
+the six directions worth checking are the three cycle steps run **twice** —
+once with the phone in dark mode, once in light:
+
+| Phone is dark | Phone is light |
+| ------------- | -------------- |
+| - [ ] Auto → Light — reveal, dark to light | - [ ] Auto → Light — same appearance either side |
+| - [ ] Light → Dark — reveal, light to dark | - [ ] Light → Dark — reveal, light to dark |
+| - [ ] Dark → Auto — same appearance either side | - [ ] Dark → Auto — reveal, dark to light |
+
+The two "same appearance" cases still run the whole transition; they must not
+flicker, stall, or leave anything behind.
+
+For every one of them:
+- [ ] The change **starts at the control you touched**, not at the screen centre or an edge.
+- [ ] The boundary is soft and slightly irregular. It is not a hard circle and not a Material ripple.
+- [ ] Background, text, borders, shadows, glass, the trail and the icons all change **together**. Nothing lags, nothing arrives twice.
+- [ ] Roughly a third of a second. It should feel finished, not hurried and not waited-on.
+- [ ] Nothing jumps at the start or the end.
+
+Then the ones that break things:
+- [ ] **Tap the control repeatedly, fast.** The outgoing change finishes travelling and the next starts from the new touch point. No frozen screenshot, no half-erased screen, no stranding between two themes.
+- [ ] Tap it during the onboarding trail draw. Both keep their frame rate.
+- [ ] Rotate the phone mid-transition.
+- [ ] Background the app mid-transition and come back.
+- [ ] Animator duration scale off: the theme simply arrives, with no reveal and nothing left over.
+- [ ] The dot on the control is present for Light and Dark, absent for Auto.
+- [ ] Light mode read outdoors, dark mode read in a dark room. Both should feel deliberately designed, not inverted from each other.
+
 ### Haptics
 - [ ] Each of the five feelings is distinguishable.
 - [ ] `milestone` feels different from `confirm` — that is its whole job.

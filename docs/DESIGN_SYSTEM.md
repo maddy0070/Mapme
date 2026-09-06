@@ -218,6 +218,20 @@ is what the current screens need. An icon gets drawn when a screen genuinely
 cannot speak without it; a set that grows ahead of its screens is how a product
 ends up with four visual dialects.
 
+**Everything stays inside the safe area.** All ink, stroke width included, sits
+within 3..21 of the 24 grid. `MapMeIconsGeometryTest` fails the build otherwise.
+This rule exists because the first set was drawn to the edges of its box, so an
+arrow inside a squircle button looked like it was escaping — a sizing problem
+that no amount of nudging the position could have fixed.
+
+**Measurements do not see everything.** The first `Replay` passed every
+assertion — safe area, optical centring, stroke weight, minimum size — and still
+read as a "C" with a wart, because its arrowhead pointed right while the curve
+at that point was travelling up and to the left. Direction is not something the
+test can check. Any new or redrawn glyph gets **looked at, rendered at the size
+it is actually used**, before it ships; a head or terminal is derived from its
+own curve's tangent rather than placed by eye.
+
 ---
 
 ## 8. Components
