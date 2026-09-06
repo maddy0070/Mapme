@@ -99,6 +99,62 @@ Tiles come from a network, so do these twice: once on wifi, once on mobile data.
 - [ ] Aeroplane mode, then open the map: a friendly explanation, and a retry that works.
 - [ ] Retry after turning the network back on actually loads the map.
 
+### Recording a journey — the walk test
+
+**This is the only test that counts for recording.** Nothing here can be judged
+from a screenshot or an emulator: the whole feature is about what a real GPS
+does on a real street, and the failure modes it exists to handle only appear
+outdoors.
+
+Do the walk once properly, then read the list:
+
+1. Open MapMe, tap **Start journey**, grant location when asked.
+2. Walk for **three to five minutes**. Watch the line appear behind you.
+3. **Pause.** Keep walking for a minute or two while paused.
+4. **Resume.** Walk another few minutes.
+5. **Finish**, confirm, and look at the saved journey.
+
+Then check:
+
+- [ ] The line follows **the pavement you actually walked**, not a smoothed
+      curve through the buildings beside it. This is the one that matters most.
+- [ ] Standing still for a minute does **not** draw a scribble where you stood.
+- [ ] The stretch you walked **while paused is not drawn**, and there is no
+      straight line joining where you paused to where you resumed.
+- [ ] Distance does not include that gap. A five-minute pause should add roughly
+      nothing to the total.
+- [ ] After Finish, the journey is still on the map and reads as finished.
+- [ ] **Force-stop MapMe, reopen it.** The journey is still there.
+- [ ] Pause, then **lock the phone** for two minutes, then resume. Still one
+      journey.
+
+The ones that break it:
+
+- [ ] **Lock the screen and put the phone in a pocket for five minutes while
+      recording.** The walk must continue. This is what the foreground service
+      is for; if the line has a hole in it, the service is not doing its job.
+- [ ] The recording notification appears, says a distance and a time, and
+      **never shows a location**.
+- [ ] Pause and resume from the **notification** rather than the app.
+- [ ] Switch Auto/Light/Dark **mid-walk**. Recording must continue, the trail
+      must stay on the map, and no points may be lost. The trail vanishing on a
+      theme switch is the specific bug the style-reload path exists to prevent.
+- [ ] Rotate the phone mid-walk. Nothing resets.
+- [ ] Pan away from yourself mid-walk, explore, then recentre. Recording
+      continues the whole time.
+- [ ] Revoke location permission in Settings **during** a walk, then return.
+      MapMe should say the journey stopped and **keep what was already walked**.
+- [ ] Turn location services off entirely mid-walk. Same.
+- [ ] Aeroplane mode mid-walk: tiles stop, **GPS and recording do not**. The
+      line should keep growing over a blank map.
+- [ ] Tap Finish and then "Keep walking" — the journey must survive.
+
+Long-walk sanity, if you get the chance:
+
+- [ ] A journey of **thirty minutes or more** stays smooth to pan and zoom. The
+      trail is a map layer rather than per-frame drawing precisely so that a
+      long walk does not get slower, and that claim wants checking once.
+
 ### Haptics
 - [ ] Each of the five feelings is distinguishable.
 - [ ] `milestone` feels different from `confirm` — that is its whole job.

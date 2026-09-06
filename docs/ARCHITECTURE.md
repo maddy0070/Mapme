@@ -8,10 +8,11 @@ MapMe
 ├── core/design    The MapMe design system. Tokens, components, brand.
 ├── core/location  Where you are. Permission model, platform provider.
 ├── core/map       The basemap. Engine wrapper, generated style, camera.
-└── core/model     Domain vocabulary. Pure Kotlin, no Android.
+├── core/model     Domain vocabulary. Pure Kotlin, no Android.
+└── core/recording Turning a walk into a saved journey.
 ```
 
-Five modules, and each one earns its boundary:
+Six modules, and each one earns its boundary:
 
 - **`:core:design`** is the product's identity. Every future feature depends on
   it, and it must be buildable and previewable without the app. Keeping it
@@ -26,6 +27,13 @@ Five modules, and each one earns its boundary:
 - **`:core:location`** is separate from `:core:map` because recording will want
   location without a map on screen, and because the permission state machine is
   worth testing on the JVM rather than through a screen.
+- **`:core:recording`** holds the state machine, the location filter, the
+  journal store and the foreground service. They are one module rather than
+  three because they are one job — a walk becoming a journey — and splitting
+  them before there is a second consumer would be structure for its own sake.
+  Nothing in it knows about a map or a screen, which is why the whole state
+  machine is tested on the JVM in milliseconds instead of by walking round the
+  block. See [ADR 0003](decisions/0003-journey-persistence.md).
 - **`:app`** is thin on purpose. It wires things together and owns navigation.
 
 There is deliberately **no** `:core:data`, `:core:location`, or
@@ -38,8 +46,8 @@ the sprint that fills them.
 When journey recording lands, the expected shape is:
 
 ```
-core/data        Journey repository. The one place features ask for journeys.
-core/database    Room. Local, encrypted-at-rest if practical. Never leaves the phone.
+core/data        Journey repository, once there is more than one consumer.
+core/database    A database, once journeys need querying rather than reading whole.
 feature/home     The map + live trail + glass information.
 feature/history  Day / week / month / year.
 feature/replay   Cinematic playback.
