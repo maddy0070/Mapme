@@ -65,6 +65,40 @@ Then the ones that break things:
 - [ ] The dot on the control is present for Light and Dark, absent for Auto.
 - [ ] Light mode read outdoors, dark mode read in a dark room. Both should feel deliberately designed, not inverted from each other.
 
+### The map
+
+Tiles come from a network, so do these twice: once on wifi, once on mobile data.
+
+- [ ] First launch after onboarding lands on the map, not on a blank screen.
+- [ ] The loading state is MapMe's, and tiles arrive **into** it without a flash — the
+      loading ground and the map's own ground are the same colour on purpose.
+- [ ] Pan. Fast pan and fling. Pinch zoom, repeatedly, in both directions.
+- [ ] Labels are present and readable. If there are **no labels at all**, the font stack
+      is missing — the host serves `Noto Sans Regular` and nothing else.
+- [ ] Roads separate into two weights; water, parks and buildings are all distinguishable.
+- [ ] Nothing on the map is vivid. It should feel like a stage waiting for something.
+- [ ] Switch theme while the map is visible. The map changes with everything else.
+- [ ] Rotate, background and return, kill and relaunch — all while on the map.
+
+### Location
+
+- [ ] Fresh install: the permission prompt does **not** appear before you reach the map.
+- [ ] The card explains why, and the button opens the *system* dialog — not a MapMe copy of it.
+- [ ] Grant precise. The dot appears, with a halo sized to the accuracy.
+- [ ] Grant approximate only (Android 12+). MapMe accepts it and does not ask again.
+- [ ] Deny once: the card explains, and offers the dialog again.
+- [ ] Deny twice: the card switches to Settings, because the dialog is spent.
+- [ ] Turn location services off system-wide: the map still works, and says so.
+- [ ] Grant from Settings while MapMe is backgrounded, then return — the prompt is gone.
+- [ ] **Pan away from yourself. The map must not drag itself back.** Then press recentre;
+      it should come back and resume following.
+- [ ] Recentre while already following: nothing jumps.
+
+### Map failure
+
+- [ ] Aeroplane mode, then open the map: a friendly explanation, and a retry that works.
+- [ ] Retry after turning the network back on actually loads the map.
+
 ### Haptics
 - [ ] Each of the five feelings is distinguishable.
 - [ ] `milestone` feels different from `confirm` — that is its whole job.
